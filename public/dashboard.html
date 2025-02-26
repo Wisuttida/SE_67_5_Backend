@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>User Dashboard</h1>
+        <div id="userData"></div>
+        <button id="logoutButton">Logout</button>
+    </div>
+    <script>
+        // Fetch user data from local storage
+        const user = JSON.parse(localStorage.getItem('user_data'));
+        const userDataDiv = document.getElementById('userData');
+
+        if (user) {
+            userDataDiv.innerHTML = `
+                <p><strong>Username:</strong> ${user.username}</p>
+                <p><strong>Email:</strong> ${user.email}</p>
+                <p><strong>First Name:</strong> ${user.first_name}</p>
+                <p><strong>Last Name:</strong> ${user.last_name}</p>
+                <p><strong>Phone Number:</strong> ${user.phone_number}</p>
+            `;
+        } else {
+            userDataDiv.innerHTML = '<p>No user data found.</p>';
+        }
+
+        // Logout functionality
+        document.getElementById('logoutButton').addEventListener('click', function() {
+            localStorage.removeItem('auth_token');
+            localStorage.removeItem('user_data');
+            window.location.href = 'index.html'; // Redirect to login page
+        });
+    </script>
+</body>
+</html>

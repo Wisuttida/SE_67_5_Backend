@@ -2,23 +2,21 @@
 
 namespace App\Console;
 
-use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
+use Illuminate\Console\Scheduling\Schedule; // Import the Schedule class
 
 class Kernel extends ConsoleKernel
 {
-    /**
-     * Define the application's command schedule.
-     */
-    protected function schedule(Schedule $schedule): void
+    protected $commands = [
+        \App\Console\Commands\HashUserPassword::class,
+    ];
+
+    protected function schedule(Schedule $schedule)
     {
-        // $schedule->command('inspire')->hourly();
+        // Schedule commands here
     }
 
-    /**
-     * Register the commands for the application.
-     */
-    protected function commands(): void
+    protected function commands()
     {
         $this->load(__DIR__.'/Commands');
 
