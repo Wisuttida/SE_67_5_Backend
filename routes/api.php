@@ -3,7 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
-
+use App\Http\Controllers\ProductsController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -26,3 +26,10 @@ Route::middleware('auth:sanctum')->group(function () {
     });
     Route::post('/logout', [AuthController::class, 'logout']);
 });
+
+Route::post('/products', [ProductsController::class, 'store']);
+// เส้นทางสำหรับแก้ไขสินค้า (PUT หรือ PATCH ก็ได้)
+Route::put('/products/{product}', [ProductsController::class, 'update']);
+
+// เส้นทางสำหรับลบสินค้า
+Route::delete('/products/{product}', [ProductsController::class, 'destroy']);
