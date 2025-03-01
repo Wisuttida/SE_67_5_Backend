@@ -63,7 +63,7 @@ document.getElementById('loginForm').addEventListener('submit', async function(e
             // Store user data in local storage
             localStorage.setItem('auth_token', result.data.token);
             localStorage.setItem('user_data', JSON.stringify(result.data.user)); // Store user data
-            
+            localStorage.setItem('roles', JSON.stringify(result.data.roles));
             // Redirect to dashboard
             window.location.href = 'dashboard.html';
         } else {
@@ -80,5 +80,6 @@ document.getElementById('logoutButton').addEventListener('click', function() {
     // Clear local storage and update UI
     localStorage.removeItem('auth_token');
     localStorage.removeItem('user_data');
+    localStorage.removeItem('roles');
     showMessage('loginMessage', 'Logged out successfully!');
 });

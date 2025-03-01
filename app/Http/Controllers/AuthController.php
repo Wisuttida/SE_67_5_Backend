@@ -88,7 +88,7 @@ class AuthController extends Controller
 
             $user = User::where('email', $request->email)->firstOrFail();
             Log::info('User logged in successfully:', ['user_id' => $user->id]);
-
+            $getRoles = roles::where('users_user_id', $user->user_id)->get();
             // Invalidate previous tokens
             $user->tokens()->delete();
 
@@ -99,6 +99,7 @@ class AuthController extends Controller
                 'message' => 'Logged in successfully',
                 'data' => [
                     'user' => $user,
+                    'roles' => $getRoles,
                     'token' => $token
                 ]
             ], 200);
