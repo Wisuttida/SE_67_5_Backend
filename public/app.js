@@ -20,7 +20,7 @@ document.getElementById('registerForm').addEventListener('submit', async functio
         });
 
         const result = await response.json();
-        
+
         if (response.ok) {
             showMessage('registerMessage', 'Registration successful! You can now log in.');
             this.reset(); // Clear the form

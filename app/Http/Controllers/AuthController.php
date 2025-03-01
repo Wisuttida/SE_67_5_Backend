@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\roles;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\RegisterRequest;
 use Illuminate\Http\Request;
@@ -40,6 +41,13 @@ class AuthController extends Controller
             }
 
             Log::info('User created successfully:', ['user_id' => $user->id]);
+
+            $defaultRoles = [
+                'position_position_id' => 4,
+                'users_user_id' => $user->user_id
+            ];
+
+            $assignRoles = roles::create($defaultRoles);
 
             $token = $user->createToken('auth_token')->plainTextToken;
 

@@ -9,6 +9,7 @@ class roles extends Model
 {
     use HasFactory;
     protected $primaryKey = 'role_id';
+    public $timestamps = false;
 
     // กำหนดความสัมพันธ์กลับไปที่ User
     public function users()
@@ -21,4 +22,10 @@ class roles extends Model
     {
         return $this->belongsTo(Position::class, 'position_position_id', 'position_id');
     }
+
+    protected $fillable = [
+        'users_user_id',
+        'position_position_id'
+    ];
+
 }
