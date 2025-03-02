@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\roles;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\RegisterRequest;
 use Illuminate\Http\Request;
@@ -40,6 +41,13 @@ class AuthController extends Controller
             }
 
             Log::info('User created successfully:', ['user_id' => $user->id]);
+
+            $defaultRoles = [
+                'position_position_id' => 4,
+                'users_user_id' => $user->user_id
+            ];
+
+            $assignRoles = roles::create($defaultRoles);
 
             $token = $user->createToken('auth_token')->plainTextToken;
 
@@ -80,7 +88,7 @@ class AuthController extends Controller
 
             $user = User::where('email', $request->email)->firstOrFail();
             Log::info('User logged in successfully:', ['user_id' => $user->id]);
-
+            $getRoles = roles::where('users_user_id', $user->user_id)->get();
             // Invalidate previous tokens
             $user->tokens()->delete();
 
@@ -91,6 +99,7 @@ class AuthController extends Controller
                 'message' => 'Logged in successfully',
                 'data' => [
                     'user' => $user,
+                    'roles' => $getRoles,
                     'token' => $token
                 ]
             ], 200);
