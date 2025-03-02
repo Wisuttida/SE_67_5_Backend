@@ -26,7 +26,10 @@ class products extends Model
         'shops_shop_id',  // FK ของ Shop
         // created_at จะถูก set อัตโนมัติหากใช้ timestamp ของ Laravel
     ];
-
+    public function shop()
+    {
+        return $this->belongsTo(\App\Models\shops::class, 'shops_shop_id', 'shop_id');
+    }
     // กำหนดความสัมพันธ์แบบ many-to-many กับ FragranceTone
     public function fragranceTones()
     {

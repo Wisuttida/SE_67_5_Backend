@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ProductsController;
+use App\Http\Controllers\StockController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -33,3 +34,11 @@ Route::put('/products/{product}', [ProductsController::class, 'update']);
 
 // เส้นทางสำหรับลบสินค้า
 Route::delete('/products/{product}', [ProductsController::class, 'destroy']);
+
+// 1) แสดงรายการสินค้า (รูป, ชื่อสินค้า, ราคา) หรือค้นหา
+Route::get('/products', [ProductsController::class, 'index']);
+// 2) แสดงรายการสินค้า (รูป, ชื่อสินค้า, ราคา) หรือค้นหา สินค้าล่าสุด
+Route::get('/latest-products', [ProductsController::class, 'latestProducts']);
+// 3) แสดงรายละเอียดสินค้า (รูป, ชื่อสินค้า, ราคา, ชื่อร้านค้า, รายละเอียด)
+Route::get('/products/{id}', [ProductsController::class, 'show']);
+
