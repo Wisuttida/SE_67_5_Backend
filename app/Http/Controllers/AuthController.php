@@ -25,7 +25,7 @@ class AuthController extends Controller
                 'last_name' => $request->last_name,
                 'phone_number' => $request->phone_number
             ];
-
+            
             Log::info('Attempting to create user with data:', array_merge(
                 $userData,
                 ['password' => '[HIDDEN]']
@@ -72,6 +72,7 @@ class AuthController extends Controller
                 'error' => $e->getMessage()
             ], 500);
         }
+        Log::info('Incoming registration request:', $request->all());
     }
 
     public function login(LoginRequest $request)

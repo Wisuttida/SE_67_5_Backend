@@ -18,7 +18,6 @@ document.getElementById('registerForm').addEventListener('submit', async functio
             },
             body: JSON.stringify(data),
         });
-
         const result = await response.json();
 
         if (response.ok) {
