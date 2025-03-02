@@ -10,6 +10,7 @@ class position extends Model
     use HasFactory;
     protected $primaryKey = 'position_id';
     protected $table = 'position';
+    public $timestamps = false;
 
     // ถ้าต้องการความสัมพันธ์กลับไปยังผู้ใช้ผ่าน roles
     public function users()

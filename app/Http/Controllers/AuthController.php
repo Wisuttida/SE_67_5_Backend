@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Models\roles;
+use App\Models\position;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\RegisterRequest;
 use Illuminate\Http\Request;
@@ -88,7 +89,15 @@ class AuthController extends Controller
 
             $user = User::where('email', $request->email)->firstOrFail();
             Log::info('User logged in successfully:', ['user_id' => $user->id]);
+
             $getRoles = roles::where('users_user_id', $user->user_id)->get();
+            $positionId = [];
+            $dataArray = json_decode($getRoles, true);
+            foreach ($dataArray as $item) {
+                $positionId[] = $item['position_position_id'];
+            }
+            $positionNames = position::whereIn('position_id', $positionId)->get();
+
             // Invalidate previous tokens
             $user->tokens()->delete();
 
@@ -100,6 +109,7 @@ class AuthController extends Controller
                 'data' => [
                     'user' => $user,
                     'roles' => $getRoles,
+                    'rolesName' => $positionNames,
                     'token' => $token
                 ]
             ], 200);

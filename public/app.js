@@ -64,6 +64,7 @@ document.getElementById('loginForm').addEventListener('submit', async function(e
             localStorage.setItem('auth_token', result.data.token);
             localStorage.setItem('user_data', JSON.stringify(result.data.user)); // Store user data
             localStorage.setItem('roles', JSON.stringify(result.data.roles));
+            localStorage.setItem('roles_name', JSON.stringify(result.data.rolesName));
             // Redirect to dashboard
             window.location.href = 'dashboard.html';
         } else {
@@ -81,5 +82,6 @@ document.getElementById('logoutButton').addEventListener('click', function() {
     localStorage.removeItem('auth_token');
     localStorage.removeItem('user_data');
     localStorage.removeItem('roles');
+    localStorage.removeItem('roles_name');
     showMessage('loginMessage', 'Logged out successfully!');
 });
