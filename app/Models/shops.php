@@ -15,6 +15,7 @@ class shops extends Model
     // ถ้าต้องการ fillable ก็เพิ่มได้
     protected $fillable = [
         'shop_name',
+        'shop_image',
         'description',
         'accepts_custom',
         'bank_name',

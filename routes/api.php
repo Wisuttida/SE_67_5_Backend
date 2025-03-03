@@ -24,7 +24,7 @@ use App\Http\Controllers\UsersController;
 
 // Public routes
 Route::post('/register', [AuthController::class, 'register']);
-Route::post('/login', [AuthController::class, 'login']);
+Route::post('/login', [AuthController::class, 'login']); //แก้ตรง ->name('login');
 Route::get('/sanctum/csrf-cookie', [CsrfCookieController::class, 'show']);
 Route::post('/logout', [AuthController::class, 'logout']);
 
@@ -42,6 +42,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('addresses', AddressesController::class);
 
     // Endpoint สำหรับเรียกข้อมูลแผนที่
+    // เส้นทางสำหรับเรียกข้อมูลแผนที่
+    Route::get('map/provinces', [MapController::class, 'getProvinces']);
     Route::get('map/districts/{province_id}', [MapController::class, 'getDistricts']);
     Route::get('map/subdistricts/{district_id}', [MapController::class, 'getSubdistricts']);
 });

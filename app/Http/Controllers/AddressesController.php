@@ -9,7 +9,7 @@ class AddressesController extends Controller
     // ดึงข้อมูลที่อยู่ทั้งหมดของผู้ใช้ (อาจจะใช้การกรองด้วยผู้ใช้ที่ล็อกอินอยู่)
     public function index(Request $request)
     {
-        $addresses = Address::where('users_user_id', $request->user()->user_id)->get();
+        $addresses = addresses::where('users_user_id', $request->user()->user_id)->get();
 
         return response()->json([
             'status' => 'success',
@@ -32,14 +32,14 @@ class AddressesController extends Controller
 
         // หาก is_default เป็น true ให้เปลี่ยนค่า is_default ของที่อยู่อื่น ๆ ของผู้ใช้เป็น 0
         if (isset($validated['is_default']) && $validated['is_default']) {
-            Address::where('users_user_id', $request->user()->user_id)
+            addresses::where('users_user_id', $request->user()->user_id)
                 ->update(['is_default' => 0]);
         }
 
         // กำหนดผู้ใช้จากข้อมูลการล็อกอิน (หรือรับค่าจาก request ถ้าเป็น admin)
         $validated['users_user_id'] = $request->user()->user_id;
 
-        $address = Address::create($validated);
+        $address = addresses::create($validated);
 
         return response()->json([
             'status' => 'success',
@@ -51,7 +51,7 @@ class AddressesController extends Controller
     // แก้ไขที่อยู่
     public function update(Request $request, $id)
     {
-        $address = Address::findOrFail($id);
+        $address = addresses::findOrFail($id);
 
         // ตรวจสอบสิทธิ์: ให้แน่ใจว่าที่อยู่นี้เป็นของผู้ใช้ที่ล็อกอินอยู่
         if ($address->users_user_id !== $request->user()->user_id) {
@@ -72,7 +72,7 @@ class AddressesController extends Controller
 
         // หากอัปเดตเป็น default ให้เปลี่ยนค่า is_default ของที่อยู่อื่น ๆ ของผู้ใช้เป็น 0
         if (isset($validated['is_default']) && $validated['is_default']) {
-            Address::where('users_user_id', $request->user()->user_id)
+            addresses::where('users_user_id', $request->user()->user_id)
                 ->update(['is_default' => 0]);
         }
 
@@ -88,7 +88,7 @@ class AddressesController extends Controller
     // ลบที่อยู่
     public function destroy(Request $request, $id)
     {
-        $address = Address::findOrFail($id);
+        $address = addresses::findOrFail($id);
 
         if ($address->users_user_id !== $request->user()->user_id) {
             return response()->json([

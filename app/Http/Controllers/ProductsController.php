@@ -41,14 +41,29 @@ class ProductsController extends Controller
             });
         }
 
-        // ดึงข้อมูลสินค้าตาม query ที่สร้าง
-        // โดยกรณีนี้ ต้องการแค่ รูป, ชื่อสินค้า, ราคา => select เฉพาะคอลัมน์ที่จำเป็น
+        // ดึงข้อมูลร้านค้าพร้อมกับสินค้า
+        $query->with('shop');
+
+        // อย่าลืม select คอลัมน์ shops_shop_id ด้วย เพื่อให้ความสัมพันธ์ทำงานได้
         $products = $query->select([
             'product_id',
             'name',
             'price',
-            'image_url'
+            'image_url',
+            'shops_shop_id'
         ])->get();
+
+        // map ข้อมูลสินค้าให้รวมข้อมูลจากร้านค้า (ชื่อร้านและรูปร้านค้า)
+        $products = $products->map(function ($product) {
+            return [
+                'product_id' => $product->product_id,
+                'name' => $product->name,
+                'price' => $product->price,
+                'image_url' => $product->image_url,
+                'shop_name' => optional($product->shop)->shop_name,
+                'shop_image' => optional($product->shop)->shop_image, // สมมติว่ามีคอลัมน์ shop_image ในตาราง shops
+            ];
+        });
 
         return response()->json($products);
     }
@@ -67,6 +82,7 @@ class ProductsController extends Controller
             'price' => $product->price,
             'image_url' => $product->image_url,
             'shop_name' => optional($product->shop)->shop_name,  // กันกรณี shop เป็น null
+            'shop_image' => optional($product->shop)->shop_image,
             'description' => $product->description,
             // อื่น ๆ ที่ต้องการ
             'fragrance_strength' => $product->fragrance_strength,
