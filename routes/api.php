@@ -5,6 +5,11 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ProductsController;
 use App\Http\Controllers\StockController;
+use App\Http\Controllers\OrdersController;
+use App\Http\Controllers\PaymentsController;
+use App\Http\Controllers\AddressesController;
+use App\Http\Controllers\MapController;
+use App\Http\Controllers\UsersController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -26,6 +31,34 @@ Route::middleware('auth:sanctum')->group(function () {
         return $request->user();
     });
     Route::post('/logout', [AuthController::class, 'logout']);
+});
+Route::middleware('auth:sanctum')->group(function () {
+    // จัดการข้อมูลผู้ใช้ (เฉพาะผู้ดูแลระบบสามารถเข้าถึงได้)
+    Route::apiResource('users', UsersController::class);
+
+    // จัดการที่อยู่สำหรับผู้ใช้ที่ล็อกอินอยู่
+    Route::apiResource('addresses', AddressesController::class);
+
+    // Endpoint สำหรับเรียกข้อมูลแผนที่
+    Route::get('map/districts/{province_id}', [MapController::class, 'getDistricts']);
+    Route::get('map/subdistricts/{district_id}', [MapController::class, 'getSubdistricts']);
+});
+Route::middleware('auth:api')->group(function () {
+    // Checkout สร้างคำสั่งซื้อจากตะกร้า
+    Route::post('/checkout', [OrdersController::class, 'checkout']);
+
+    // สำหรับผู้ซื้อ: ตรวจสอบสถานะคำสั่งซื้อ
+    Route::get('/orders', [OrdersController::class, 'listOrders']);
+    Route::get('/orders/{id}', [OrdersController::class, 'show']);
+
+    // อัปโหลดหลักฐานการชำระเงิน
+    Route::post('/orders/{id}/upload-payment', [PaymentsController::class, 'uploadPaymentProof']);
+
+    // สำหรับผู้ขาย: ดูคำสั่งซื้อที่เกี่ยวข้องกับร้านของตน
+    Route::get('/seller/orders', [OrdersController::class, 'sellerOrders']);
+
+    // สำหรับผู้ขาย: อัปเดตสถานะคำสั่งซื้อ (เช่น ยืนยันการชำระเงิน, จัดส่งสินค้า)
+    Route::post('/orders/{id}/update-status', [OrdersController::class, 'updateStatus']);
 });
 
 Route::post('/products', [ProductsController::class, 'store']);
