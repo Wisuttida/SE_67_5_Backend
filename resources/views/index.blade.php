@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Authentication</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="{{ asset('styles.css') }}">
 </head>
 <body>
     <div class="container">
@@ -32,9 +32,9 @@
                 <button type="submit">Login</button>
                 <div id="loginMessage" class="message"></div>
             </form>
-            <button id="logoutButton">Logout</button> <!-- Logout button -->
+            <button id="logoutButton">Logout</button>
         </div>
     </div>
-    <script src="app.js"></script>
+    <script src="{{ asset('app.js') }}"></script>
 </body>
 </html>

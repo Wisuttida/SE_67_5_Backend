@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ProductsController;
 use App\Http\Controllers\StockController;
+use Laravel\Sanctum\Http\Controllers\CsrfCookieController;
 use App\Http\Controllers\OrdersController;
 use App\Http\Controllers\PaymentsController;
 use App\Http\Controllers\AddressesController;
@@ -24,13 +25,14 @@ use App\Http\Controllers\UsersController;
 // Public routes
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
+Route::get('/sanctum/csrf-cookie', [CsrfCookieController::class, 'show']);
+Route::post('/logout', [AuthController::class, 'logout']);
 
 // Protected routes
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', function (Request $request) {
         return $request->user();
     });
-    Route::post('/logout', [AuthController::class, 'logout']);
 });
 Route::middleware('auth:sanctum')->group(function () {
     // จัดการข้อมูลผู้ใช้ (เฉพาะผู้ดูแลระบบสามารถเข้าถึงได้)

@@ -99,9 +99,6 @@ class AuthController extends Controller
             }
             $positionNames = position::whereIn('position_id', $positionId)->get();
 
-            // Invalidate previous tokens
-            $user->tokens()->delete();
-
             $token = $user->createToken('auth_token')->plainTextToken;
 
             return response()->json([
@@ -130,24 +127,33 @@ class AuthController extends Controller
 
     public function logout(Request $request)
     {
-        try {
-            $request->user()->currentAccessToken()->delete();
-            Log::info('User logged out successfully');
+        // try {
+        //     if (!$request->user()) {
+        //         return response()->json([
+        //             'status' => 'error',
+        //             'message' => 'No user is logged in'
+        //         ], 401);
+        //     }
+        //     Log::info('testkuy',$request->user()->currentAccessToken());
+        //     $request->user()->currentAccessToken()->delete();
+        //     Log::info('User logged out successfully');
+            
+        //     return response()->json([
+        //         'status' => 'success',
+        //         'message' => 'Logged out successfully'
+        //     ], 200);
+        // } catch (\Exception $e) {
+        //     Log::error('Logout failed:', [
+        //         'error' => $e->getMessage()
+        //     ]);
 
-            return response()->json([
-                'status' => 'success',
-                'message' => 'Logged out successfully'
-            ], 200);
-        } catch (\Exception $e) {
-            Log::error('Logout failed:', [
-                'error' => $e->getMessage()
-            ]);
-
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Logout failed',
-                'error' => $e->getMessage()
-            ], 500);
-        }
+        //     return response()->json([
+        //         'status' => 'error',
+        //         'message' => 'Logout failed',
+        //         'error' => $e->getMessage()
+        //     ], 500);
+        // }
+        Auth::logout();
+        return response()->json(['message' => 'Successfully logged out']);
     }
 }
