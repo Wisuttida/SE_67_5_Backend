@@ -25,7 +25,7 @@ class AuthController extends Controller
                 'last_name' => $request->last_name,
                 'phone_number' => $request->phone_number
             ];
-            
+
             Log::info('Attempting to create user with data:', array_merge(
                 $userData,
                 ['password' => '[HIDDEN]']
@@ -89,7 +89,7 @@ class AuthController extends Controller
             }
 
             $user = User::where('email', $request->email)->firstOrFail();
-            Log::info('User logged in successfully:', ['user_id' => $user->id]);
+            Log::info('User logged in successfully:', ['user_id' => $user->user_id]);
 
             $getRoles = roles::where('users_user_id', $user->user_id)->get();
             $positionId = [];
