@@ -78,9 +78,29 @@ document.getElementById('loginForm').addEventListener('submit', async function(e
 // Function to handle logout
 document.getElementById('logoutButton').addEventListener('click', function() {
     // Clear local storage and update UI
-    localStorage.removeItem('auth_token');
-    localStorage.removeItem('user_data');
-    localStorage.removeItem('roles');
-    localStorage.removeItem('roles_name');
+    fetch('/api/logout', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}' // Include CSRF token if needed
+        },
+        credentials: 'include' // Include credentials if using cookies for session
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log(data.message); // Log the success message
+        // Clear local storage
+        localStorage.clear();
+        // Update UI (e.g., redirect to login page or show a message)
+        window.location.href = '/login'; // Redirect to login page
+    })
+    .catch(error => {
+        console.error('There was a problem with the logout request:', error);
+    });
     showMessage('loginMessage', 'Logged out successfully!');
 });
