@@ -26,8 +26,13 @@ class AddressesController extends Controller
             'street_name' => 'nullable',
             'building' => 'nullable',
             'house_number' => 'required',
-            'is_default' => 'boolean',
+
             // สามารถกำหนด users_user_id ผ่าน auth หรือจาก request ถ้าเป็นกรณี admin
+            'province' => 'sometimes|required',
+            'amphoe' => 'sometimes|required',
+            'tambon' => 'sometimes|required',
+            'zipcode' => 'sometimes|required',
+            'is_default' => 'boolean',
         ]);
 
         // หาก is_default เป็น true ให้เปลี่ยนค่า is_default ของที่อยู่อื่น ๆ ของผู้ใช้เป็น 0
@@ -67,6 +72,11 @@ class AddressesController extends Controller
             'street_name' => 'nullable',
             'building' => 'nullable',
             'house_number' => 'sometimes|required',
+            // สามารถกำหนด users_user_id ผ่าน auth หรือจาก request ถ้าเป็นกรณี admin
+            'province' => 'sometimes|required',
+            'amphoe' => 'sometimes|required',
+            'tambon' => 'sometimes|required',
+            'zipcode' => 'sometimes|required',
             'is_default' => 'boolean',
         ]);
 
