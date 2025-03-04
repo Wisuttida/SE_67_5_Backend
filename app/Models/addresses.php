@@ -27,6 +27,11 @@ class addresses extends Model
         'building',
         'house_number',
         'is_default',
-        'users_user_id'
+        'users_user_id',
+        'province',
+        'amphoe',
+        'tambon',
+        'zipcode',
     ];
+
 }

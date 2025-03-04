@@ -6,11 +6,14 @@ class TambonController extends Controller
 {
 
     public $data;
+
     public function __construct()
     {
+        // อ่านข้อมูลจากไฟล์ JSON ในโฟลเดอร์ public
         $path = public_path('raw_database.json');
         $this->data = json_decode(file_get_contents($path), false);
     }
+
     public function getProvinces()
     {
         $data = $this->data;
@@ -19,8 +22,9 @@ class TambonController extends Controller
         }, $data);
         $provinces = array_unique($provinces);
         $provinces = array_values($provinces);
-        return $provinces;
+        return response()->json($provinces);
     }
+
     public function getAmphoes(Request $request)
     {
         $data = $this->data;
@@ -32,21 +36,23 @@ class TambonController extends Controller
         }, $amphoes);
         $amphoes = array_unique($amphoes);
         $amphoes = array_values($amphoes);
-        return $amphoes;
+        return response()->json($amphoes);
     }
+
     public function getTambons(Request $request)
     {
         $data = $this->data;
-        $districts = array_filter($data, function ($item) use ($request) {
+        $tambons = array_filter($data, function ($item) use ($request) {
             return $item->amphoe == $request->get('amphoe') && $item->province == $request->get('province');
         });
-        $districts = array_map(function ($item) {
+        $tambons = array_map(function ($item) {
             return $item->district;
-        }, $districts);
-        $districts = array_unique($districts);
-        $districts = array_values($districts);
-        return $districts;
+        }, $tambons);
+        $tambons = array_unique($tambons);
+        $tambons = array_values($tambons);
+        return response()->json($tambons);
     }
+
     public function getZipcodes(Request $request)
     {
         $data = $this->data;
@@ -57,6 +63,6 @@ class TambonController extends Controller
             return $item->zipcode;
         }, $zipcodes);
         $zipcodes = array_values($zipcodes);
-        return $zipcodes;
+        return response()->json($zipcodes);
     }
 }
