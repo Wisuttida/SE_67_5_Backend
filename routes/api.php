@@ -9,8 +9,10 @@ use Laravel\Sanctum\Http\Controllers\CsrfCookieController;
 use App\Http\Controllers\OrdersController;
 use App\Http\Controllers\PaymentsController;
 use App\Http\Controllers\AddressesController;
-use App\Http\Controllers\MapController;
+
 use App\Http\Controllers\UsersController;
+use App\Http\Controllers\API\TambonController;
+
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -41,11 +43,6 @@ Route::middleware('auth:sanctum')->group(function () {
     // จัดการที่อยู่สำหรับผู้ใช้ที่ล็อกอินอยู่
     Route::apiResource('addresses', AddressesController::class);
 
-    // Endpoint สำหรับเรียกข้อมูลแผนที่
-    // เส้นทางสำหรับเรียกข้อมูลแผนที่
-    Route::get('map/provinces', [MapController::class, 'getProvinces']);
-    Route::get('map/districts/{province_id}', [MapController::class, 'getDistricts']);
-    Route::get('map/subdistricts/{district_id}', [MapController::class, 'getSubdistricts']);
 });
 Route::middleware('auth:api')->group(function () {
     // Checkout สร้างคำสั่งซื้อจากตะกร้า
@@ -79,3 +76,7 @@ Route::get('/latest-products', [ProductsController::class, 'latestProducts']);
 // 3) แสดงรายละเอียดสินค้า (รูป, ชื่อสินค้า, ราคา, ชื่อร้านค้า, รายละเอียด)
 Route::get('/products/{id}', [ProductsController::class, 'show']);
 
+Route::get('/provinces', [TambonController::class, 'getProvinces']);
+Route::get('/amphoes', [TambonController::class, 'getAmphoes']);
+Route::get('/tambons', [TambonController::class, 'getTambons']);
+Route::get('/zipcodes', [TambonController::class, 'getZipcodes']);
