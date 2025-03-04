@@ -24,9 +24,11 @@ use App\Http\Controllers\UsersController;
 
 // Public routes
 Route::post('/register', [AuthController::class, 'register']);
+Route::post('/registerShop', [AuthController::class, 'registerShop']);
+Route::post('/registerFarm', [AuthController::class, 'registerFarm']);
 Route::post('/login', [AuthController::class, 'login']); //แก้ตรง ->name('login');
-Route::get('/sanctum/csrf-cookie', [CsrfCookieController::class, 'show']);
 Route::post('/logout', [AuthController::class, 'logout']);
+Route::get('/sanctum/csrf-cookie', [CsrfCookieController::class, 'show']);
 
 // Protected routes
 Route::middleware('auth:sanctum')->group(function () {

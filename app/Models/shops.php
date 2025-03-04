@@ -8,9 +8,11 @@ use Illuminate\Database\Eloquent\Model;
 class shops extends Model
 {
     use HasFactory;
+    protected $table = 'shops';
     protected $primaryKey = 'shop_id';  // <-- ตั้งค่า PK ให้ตรงกับตาราง
     public $incrementing = true;
     protected $keyType = 'int';
+    public $timestamps = false;
 
     // ถ้าต้องการ fillable ก็เพิ่มได้
     protected $fillable = [
