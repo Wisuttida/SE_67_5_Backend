@@ -88,4 +88,10 @@ class User extends Authenticatable
     {
         return $this->password;
     }
+
+    public function addresses()
+    {
+        return $this->hasMany(addresses::class, 'users_user_id', 'user_id');
+    }
+
 }

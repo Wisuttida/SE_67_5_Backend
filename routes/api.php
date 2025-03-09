@@ -9,7 +9,7 @@ use Laravel\Sanctum\Http\Controllers\CsrfCookieController;
 use App\Http\Controllers\OrdersController;
 use App\Http\Controllers\PaymentsController;
 use App\Http\Controllers\AddressesController;
-
+use App\Http\Controllers\CartController;
 use App\Http\Controllers\UsersController;
 use App\Http\Controllers\API\TambonController;
 
@@ -46,22 +46,23 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('addresses', AddressesController::class);
 
 });
-Route::middleware('auth:api')->group(function () {
-    // Checkout สร้างคำสั่งซื้อจากตะกร้า
-    Route::post('/checkout', [OrdersController::class, 'checkout']);
-
-    // สำหรับผู้ซื้อ: ตรวจสอบสถานะคำสั่งซื้อ
-    Route::get('/orders', [OrdersController::class, 'listOrders']);
-    Route::get('/orders/{id}', [OrdersController::class, 'show']);
-
-    // อัปโหลดหลักฐานการชำระเงิน
-    Route::post('/orders/{id}/upload-payment', [PaymentsController::class, 'uploadPaymentProof']);
-
-    // สำหรับผู้ขาย: ดูคำสั่งซื้อที่เกี่ยวข้องกับร้านของตน
-    Route::get('/seller/orders', [OrdersController::class, 'sellerOrders']);
-
-    // สำหรับผู้ขาย: อัปเดตสถานะคำสั่งซื้อ (เช่น ยืนยันการชำระเงิน, จัดส่งสินค้า)
-    Route::post('/orders/{id}/update-status', [OrdersController::class, 'updateStatus']);
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/cart/add', [CartController::class, 'addToCart']); // เพิ่มสินค้าในตะกร้า
+    Route::delete('/cart/remove/{cart_item_id}', [CartController::class, 'removeFromCart']); // ลบสินค้าออกจากตะกร้า
+    Route::put('/cart/update/{cart_item_id}', [CartController::class, 'updateCartItem']); // อัปเดตจำนวนสินค้าในตะกร้า
+    Route::get('/cart/items', [CartController::class, 'getCartItems']); // ดูสินค้าในตะกร้า
+    Route::get('/cart/items/shop/{shop_id}', [CartController::class, 'getCartItemsByShop']); // ดูสินค้าในตะกร้าจากร้านค้าที่เลือก
+    // ------------------ Orders (คำสั่งซื้อ) ------------------
+    Route::post('/orders/create', [OrdersController::class, 'createOrder']); // สร้างคำสั่งซื้อ
+    Route::put('/orders/update-status/{order_id}', [OrdersController::class, 'updateOrderStatus']); // อัปเดตสถานะคำสั่งซื้อ
+    Route::get('/orders/track/{order_id}', [OrdersController::class, 'trackOrder']); // ติดตามสถานะคำสั่งซื้อ
+    Route::get('/orders/show/{id}', [OrdersController::class, 'show']);
+    Route::get('/orders/list', [OrdersController::class, 'listOrders']);
+    Route::get('/orders/seller', [OrdersController::class, 'sellerOrders']);
+    Route::get('/orders/status/{status}', [OrdersController::class, 'getOrdersByStatus']);
+    // ------------------ Payments (การชำระเงิน) ------------------
+    Route::post('/payments/upload/{order_id}', [PaymentsController::class, 'uploadPaymentProof']); // อัปโหลดหลักฐานการชำระเงิน
+    Route::put('/payments/verify/{payment_id}', [PaymentsController::class, 'verifyPayment']); // ยืนยันการชำระเงิน
 });
 
 Route::post('/products', [ProductsController::class, 'store']);

@@ -8,38 +8,40 @@ use App\Models\payments;
 use Illuminate\Support\Facades\Storage;
 class PaymentsController extends Controller
 {
-    public function uploadPaymentProof(Request $request, $orderId)
+    public function uploadPaymentProof(Request $request, $order_id)
     {
-        // ตรวจสอบข้อมูล input
         $request->validate([
-            'payment_proof' => 'required|image|max:2048', // จำกัดขนาดไฟล์และชนิดเป็น image
+            'payment_proof' => 'required|image|mimes:jpg,png,jpeg|max:2048'
         ]);
 
-        $user = auth()->user();
-
-        // ตรวจสอบว่าคำสั่งซื้อที่ต้องการอัปโหลดหลักฐานเป็นของผู้ใช้
-        $order = orders::where('order_id', $orderId)
-            ->where('users_user_id', $user->user_id)
-            ->first();
-
+        $order = orders::find($order_id);
         if (!$order) {
-            return response()->json(['error' => 'ไม่พบคำสั่งซื้อหรือคุณไม่มีสิทธิ์'], 404);
+            return response()->json(['error' => 'ไม่พบคำสั่งซื้อ'], 404);
         }
 
-        // อัปโหลดไฟล์หลักฐานการชำระเงิน
-        $path = $request->file('payment_proof')->store('payment_proofs', 'public');
+        $path = $request->file('payment_proof')->store('payments', 'public');
 
-        // สร้างเรคคอร์ดในตาราง payments
         $payment = payments::create([
-            'amount' => $order->total_amount,
-            'payment_proof_url' => Storage::url($path),
-            'status' => 'pending', // รอการตรวจสอบจากผู้ขาย
             'orders_order_id' => $order->order_id,
+            'amount' => $order->total_amount,
+            'payment_proof_url' => $path,
+            'status' => 'pending'
         ]);
 
-        return response()->json([
-            'message' => 'อัปโหลดหลักฐานการชำระเงินเรียบร้อยแล้ว รอการตรวจสอบ',
-            'payment' => $payment,
-        ]);
+        return response()->json(['message' => 'อัปโหลดหลักฐานการชำระเงินสำเร็จ', 'payment' => $payment]);
     }
+
+    public function verifyPayment($payment_id)
+    {
+        $payment = payments::find($payment_id);
+        if (!$payment) {
+            return response()->json(['error' => 'ไม่พบรายการชำระเงิน'], 404);
+        }
+
+        $payment->update(['status' => 'completed']);
+        $payment->order->update(['status' => 'confirmed']);
+
+        return response()->json(['message' => 'ยืนยันการชำระเงินสำเร็จ']);
+    }
+    
 }
