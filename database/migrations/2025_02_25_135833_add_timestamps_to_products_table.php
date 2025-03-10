@@ -7,6 +7,7 @@ return new class extends Migration {
     public function up()
     {
         Schema::table('products', function (Blueprint $table) {
+            // เปลี่ยน shops_shop_id ให้เป็น nullable
             $table->integer('shops_shop_id')->nullable()->change();
         });
     }
@@ -14,9 +15,9 @@ return new class extends Migration {
     public function down()
     {
         Schema::table('products', function (Blueprint $table) {
-            // ถ้าต้อง rollback ให้ลบคอลัมน์
-            $table->dropColumn('created_at');
-            $table->dropColumn('updated_at');
+            // เฉพาะการ revert การเปลี่ยนแปลง shops_shop_id เท่านั้น
+            $table->integer('shops_shop_id')->nullable(false)->change();
+            // ไม่ต้องลบ created_at และ updated_at เพราะไม่ได้เพิ่มเข้ามาใน migration นี้
         });
     }
 };

@@ -12,6 +12,7 @@ class cart_items extends Model
     protected $primaryKey = 'cart_item_id';
 
     protected $fillable = [
+        
         'cart_cart_id',
         'products_product_id',
         'quantity',

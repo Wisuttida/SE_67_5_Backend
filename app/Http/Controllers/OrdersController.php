@@ -16,6 +16,111 @@ use Illuminate\Support\Facades\DB;
 
 class OrdersController extends Controller
 {
+    private function getCurrentStock($productId)
+    {
+        $stockIn = DB::table('stock_transaction')
+            ->where('products_product_id', $productId)
+            ->where('transaction_type', 'In')
+            ->sum('quantity');
+
+        $stockOut = DB::table('stock_transaction')
+            ->where('products_product_id', $productId)
+            ->where('transaction_type', 'Out')
+            ->sum('quantity');
+
+        return $stockIn - $stockOut;
+    }
+
+    public function createOrderFromSelectedItems(Request $request)
+    {
+        // ตรวจสอบข้อมูลที่รับเข้ามา
+        $request->validate([
+            'cart_item_ids' => 'required|array',
+            'cart_item_ids.*' => 'integer|exists:cart_items,cart_item_id'
+        ]);
+
+        $user = auth()->user();
+        $cart = Cart::where('users_user_id', $user->user_id)->first();
+
+        if (!$cart) {
+            return response()->json(['error' => 'ตะกร้าสินค้าของคุณว่างเปล่า'], 400);
+        }
+
+        // ดึงสินค้าที่เลือกจากตะกร้า
+        $selectedCartItems = $cart->cartItems()
+            ->whereIn('cart_item_id', $request->cart_item_ids)
+            ->with('product')
+            ->get();
+
+        if ($selectedCartItems->isEmpty()) {
+            return response()->json(['error' => 'ไม่มีสินค้าที่เลือกอยู่ในตะกร้า'], 400);
+        }
+
+        // ตรวจสอบสต็อกสำหรับแต่ละรายการที่เลือก
+        foreach ($selectedCartItems as $item) {
+            $currentStock = $this->getCurrentStock($item->products_product_id);
+            if ($item->quantity > $currentStock) {
+                return response()->json([
+                    'error' => 'สินค้าคงเหลือไม่เพียงพอสำหรับ ' . $item->product->name,
+                    'requested' => $item->quantity,
+                    'available' => $currentStock,
+                ], 400);
+            }
+        }
+
+        // ตรวจสอบที่อยู่หลักของลูกค้า
+        $defaultAddress = $user->addresses()->where('is_default', 1)->first();
+        if (!$defaultAddress) {
+            return response()->json(['error' => 'โปรดตั้งค่าที่อยู่หลักก่อนทำการสั่งซื้อ'], 400);
+        }
+
+        DB::beginTransaction();
+        try {
+            // แยกสินค้าตามร้าน โดยใช้ความสัมพันธ์ shops_shop_id จาก product
+            $groupedItems = $selectedCartItems->groupBy('product.shops_shop_id');
+            $orders = [];
+
+            foreach ($groupedItems as $shop_id => $items) {
+                // สร้างคำสั่งซื้อสำหรับแต่ละร้าน
+                $order = orders::create([
+                    'users_user_id' => $user->user_id,
+                    'total_amount' => 0,
+                    'status' => 'pending',
+                    'addresses_address_id' => $defaultAddress->address_id,
+                    'shops_shop_id' => $shop_id,
+                ]);
+
+                $totalAmount = 0;
+                foreach ($items as $item) {
+                    order_items::create([
+                        'orders_order_id' => $order->order_id,
+                        'products_product_id' => $item->products_product_id,
+                        'quantity' => $item->quantity,
+                        'price' => $item->price
+                    ]);
+                    $totalAmount += $item->quantity * $item->price;
+                }
+
+                $order->update(['total_amount' => $totalAmount]);
+                $orders[] = $order;
+            }
+
+            // ลบเฉพาะสินค้าที่ถูกเลือกออกจากตะกร้า
+            $cart->cartItems()->whereIn('cart_item_id', $request->cart_item_ids)->delete();
+
+            DB::commit();
+            return response()->json(['message' => 'คำสั่งซื้อถูกสร้างแล้ว', 'orders' => $orders]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'error' => 'เกิดข้อผิดพลาดในการสร้างคำสั่งซื้อ',
+                'message' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+
+    // ฟังก์ชันสร้างคำสั่งซื้อ โดยตรวจสอบสต็อกของสินค้าในตะกร้าก่อนทำการสั่งซื้อ
     public function createOrder()
     {
         $user = auth()->user();
@@ -30,12 +135,25 @@ class OrdersController extends Controller
             return response()->json(['error' => 'โปรดตั้งค่าที่อยู่หลักก่อนทำการสั่งซื้อ'], 400);
         }
 
+        // ดึงรายการสินค้าจากตะกร้าพร้อมข้อมูลสินค้า
+        $cartItems = $cart->cartItems()->with('product')->get();
+
+        // ตรวจสอบสต็อกสำหรับแต่ละรายการสินค้าในตะกร้า
+        foreach ($cartItems as $item) {
+            $currentStock = $this->getCurrentStock($item->products_product_id);
+            if ($item->quantity > $currentStock) {
+                return response()->json([
+                    'error' => 'สินค้าคงเหลือไม่เพียงพอสำหรับ ' . $item->product->name,
+                    'requested' => $item->quantity,
+                    'available' => $currentStock,
+                ], 400);
+            }
+        }
+
         DB::beginTransaction();
-
         try {
-            $cartItems = $cart->cartItems()->with('product')->get();
-            $groupedItems = $cartItems->groupBy('product.shops_shop_id'); // แยกสินค้าตามร้านค้า
-
+            // แยกสินค้าตามร้านค้า
+            $groupedItems = $cartItems->groupBy('product.shops_shop_id');
             $orders = [];
             foreach ($groupedItems as $shop_id => $items) {
                 $order = orders::create([
@@ -43,7 +161,7 @@ class OrdersController extends Controller
                     'total_amount' => 0,
                     'status' => 'pending',
                     'addresses_address_id' => $defaultAddress->address_id,
-                    'shops_shop_id' => $shop_id, // เพิ่ม shop_id ให้รู้ว่าคำสั่งซื้อนี้มาจากร้านไหน
+                    'shops_shop_id' => $shop_id,
                 ]);
 
                 $totalAmount = 0;
@@ -66,10 +184,12 @@ class OrdersController extends Controller
 
             DB::commit();
             return response()->json(['message' => 'คำสั่งซื้อถูกสร้างแล้ว', 'orders' => $orders]);
-
         } catch (\Exception $e) {
             DB::rollBack();
-            return response()->json(['error' => 'เกิดข้อผิดพลาดในการสร้างคำสั่งซื้อ'], 500);
+            return response()->json([
+                'error' => 'เกิดข้อผิดพลาดในการสร้างคำสั่งซื้อ',
+                'message' => $e->getMessage(),
+            ], 500);
         }
     }
 
@@ -87,18 +207,19 @@ class OrdersController extends Controller
 
         if ($newStatus === 'confirmed' && $currentStatus === 'pending') {
             foreach ($order->orderItems as $item) {
-                if ($item->product->stock_quantity < $item->quantity) {
+                $currentStock = $this->getCurrentStock($item->products_product_id);
+                if ($currentStock < $item->quantity) {
                     return response()->json(['error' => 'สต็อกสินค้าไม่เพียงพอสำหรับ ' . $item->product->name], 400);
                 }
 
-                \DB::table('stock_transaction')->insert([
+                DB::table('stock_transaction')->insert([
                     'transaction_type' => 'Out',
                     'quantity' => $item->quantity,
                     'transaction_date' => now(),
                     'products_product_id' => $item->products_product_id
                 ]);
 
-                \DB::table('products')
+                DB::table('products')
                     ->where('product_id', $item->products_product_id)
                     ->decrement('stock_quantity', $item->quantity);
             }
@@ -108,7 +229,6 @@ class OrdersController extends Controller
 
         return response()->json(['message' => 'อัปเดตสถานะคำสั่งซื้อสำเร็จ', 'order' => $order]);
     }
-
 
     public function listOrders()
     {

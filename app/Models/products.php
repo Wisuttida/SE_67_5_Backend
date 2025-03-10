@@ -12,7 +12,7 @@ class products extends Model
     protected $primaryKey = 'product_id';  // ตั้งค่าให้ใช้ 'product_id' เป็น PK
     public $incrementing = true;           // หาก product_id เป็น auto_increment
     protected $keyType = 'int';            // หากเป็น integer
-
+    public $timestamps = true; // ใช้ timestamp
     protected $fillable = [
         'name',
         'description',
@@ -40,5 +40,38 @@ class products extends Model
             'fragrance_tone_fragrance_tone_id'   // FK สำหรับ fragrance_tone ใน pivot table
         );
     }
+    protected static function booted()
+    {
+        // เมื่อสร้างสินค้าใหม่ (INSERT)
+        static::created(function ($product) {
+            if ($product->stock_quantity > 0) {
+                \App\Models\stock_transaction::create([
+                    'transaction_type' => 'In',
+                    'quantity' => $product->stock_quantity,
+                    'transaction_date' => now(),
+                    'products_product_id' => $product->product_id,
+                ]);
+            }
+        });
+
+        // เมื่อมีการอัปเดตสินค้า (UPDATE)
+        static::updated(function ($product) {
+            // ตรวจสอบว่ามีการเปลี่ยนแปลงเฉพาะ stock_quantity เท่านั้น
+            if ($product->isDirty('stock_quantity')) {
+                $originalStock = $product->getOriginal('stock_quantity');
+                $newStock = $product->stock_quantity;
+                // บันทึกเฉพาะเมื่อมีการเพิ่ม stock (In)
+                if ($newStock > $originalStock) {
+                    \App\Models\stock_transaction::create([
+                        'transaction_type' => 'In',
+                        'quantity' => $newStock - $originalStock,
+                        'transaction_date' => now(),
+                        'products_product_id' => $product->product_id,
+                    ]);
+                }
+            }
+        });
+    }
+
 
 }

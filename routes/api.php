@@ -54,12 +54,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/cart/items/shop/{shop_id}', [CartController::class, 'getCartItemsByShop']); // ดูสินค้าในตะกร้าจากร้านค้าที่เลือก
     // ------------------ Orders (คำสั่งซื้อ) ------------------
     Route::post('/orders/create', [OrdersController::class, 'createOrder']); // สร้างคำสั่งซื้อ
+    Route::post('/orders/select-item', [OrdersController::class, 'createOrderFromSelectedItems']);  // สร้างคำสั่งซื้อจากสินค้าที่เลือก
     Route::put('/orders/update-status/{order_id}', [OrdersController::class, 'updateOrderStatus']); // อัปเดตสถานะคำสั่งซื้อ
-    Route::get('/orders/track/{order_id}', [OrdersController::class, 'trackOrder']); // ติดตามสถานะคำสั่งซื้อ
-    Route::get('/orders/show/{id}', [OrdersController::class, 'show']);
-    Route::get('/orders/list', [OrdersController::class, 'listOrders']);
-    Route::get('/orders/seller', [OrdersController::class, 'sellerOrders']);
-    Route::get('/orders/status/{status}', [OrdersController::class, 'getOrdersByStatus']);
+    Route::get('/orders/show/{id}', [OrdersController::class, 'show']); // ดูรายละเอียดคำสั่งซื้อตาม order_id
+    Route::get('/orders/list', [OrdersController::class, 'listOrders']); // ดูรายการคำสั่งซื้อทั้งหมดของผู้ใช้ที่ login
+    Route::get('/orders/seller', [OrdersController::class, 'sellerOrders']); // ดูรายการคำสั่งซื้อทั้งหมดของผู้ใช้ที่ login ที่เป็น Seller
+    Route::get('/orders/status/{status}', [OrdersController::class, 'getOrdersByStatus']); //ดูรายการคำสั่งซื้อตามสถานะ
     // ------------------ Payments (การชำระเงิน) ------------------
     Route::post('/payments/upload/{order_id}', [PaymentsController::class, 'uploadPaymentProof']); // อัปโหลดหลักฐานการชำระเงิน
     Route::put('/payments/verify/{payment_id}', [PaymentsController::class, 'verifyPayment']); // ยืนยันการชำระเงิน
