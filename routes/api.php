@@ -62,7 +62,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/orders/status/{status}', [OrdersController::class, 'getOrdersByStatus']); //ดูรายการคำสั่งซื้อตามสถานะ
     // ------------------ Payments (การชำระเงิน) ------------------
     Route::post('/payments/upload/{order_id}', [PaymentsController::class, 'uploadPaymentProof']); // อัปโหลดหลักฐานการชำระเงิน
-    Route::put('/payments/verify/{payment_id}', [PaymentsController::class, 'verifyPayment']); // ยืนยันการชำระเงิน
+    Route::post('/payments/verify/{payment_id}', [PaymentsController::class, 'updatePaymentStatus']); // ยืนยันการชำระเงิน
 });
 
 Route::post('/products', [ProductsController::class, 'store']);
