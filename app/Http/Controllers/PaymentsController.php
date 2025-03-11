@@ -56,6 +56,24 @@ class PaymentsController extends Controller
 
         return response()->json(['message' => 'อัปเดตสถานะการชำระเงินสำเร็จ', 'payment' => $payment]);
     }
+    public function listPaymentsForShop(Request $request)
+    {
+        // สมมติว่าร้านได้รับการระบุผ่าน authentication
+        $user = auth()->user();
+        $shop = $user->shop; // ต้องมีความสัมพันธ์ระหว่าง user กับ shop
+
+        if (!$shop) {
+            return response()->json(['error' => 'ไม่พบร้านของคุณ'], 404);
+        }
+
+        // ดึงข้อมูล payments ที่มีคำสั่งซื้อของร้านนี้
+        $payments = payments::with('order')
+            ->whereHas('order', function ($query) use ($shop) {
+                $query->where('shops_shop_id', $shop->shop_id);
+            })->get();
+
+        return response()->json(['payments' => $payments]);
+    }
 
 
 }

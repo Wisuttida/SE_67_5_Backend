@@ -61,6 +61,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/orders/seller', [OrdersController::class, 'sellerOrders']); // ดูรายการคำสั่งซื้อทั้งหมดของผู้ใช้ที่ login ที่เป็น Seller
     Route::get('/orders/status/{status}', [OrdersController::class, 'getOrdersByStatus']); //ดูรายการคำสั่งซื้อตามสถานะ
     // ------------------ Payments (การชำระเงิน) ------------------
+    Route::get('/payments/shop', [PaymentsController::class, 'listPaymentsForShop']); // ดูรายการการชำระเงินสำหรับร้านค้า
     Route::post('/payments/upload/{order_id}', [PaymentsController::class, 'uploadPaymentProof']); // อัปโหลดหลักฐานการชำระเงิน
     Route::post('/payments/verify/{payment_id}', [PaymentsController::class, 'updatePaymentStatus']); // ยืนยันการชำระเงิน
 });
