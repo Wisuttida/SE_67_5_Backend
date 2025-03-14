@@ -12,6 +12,10 @@ use App\Http\Controllers\AddressesController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\UsersController;
 use App\Http\Controllers\API\TambonController;
+use App\Http\Controllers\CustomOrderController;
+use App\Http\Controllers\CustomerCustomOrderController;
+use App\Http\Controllers\ShopCustomOrderController;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -64,8 +68,30 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/payments/shop', [PaymentsController::class, 'listPaymentsForShop']); // ดูรายการการชำระเงินสำหรับร้านค้า
     Route::post('/payments/upload/{order_id}', [PaymentsController::class, 'uploadPaymentProof']); // อัปโหลดหลักฐานการชำระเงิน
     Route::post('/payments/verify/{payment_id}', [PaymentsController::class, 'updatePaymentStatus']); // ยืนยันการชำระเงิน
+
+    
+    // ------------------ สินค้าสั่งทำ ------------------
+    // กลุ่มสำหรับ Custom Orders (สำหรับลูกค้า)
+    Route::prefix('custom-orders')->group(function () {
+        Route::post('/', [CustomOrderController::class, 'store']);
+        Route::post('/{order_id}/tester/accept', [CustomerCustomOrderController::class, 'acceptTester']);
+        Route::post('/{order_id}/tester/reject', [CustomerCustomOrderController::class, 'rejectTester']);
+    });
+
+    // กลุ่มสำหรับ Custom Orders (สำหรับร้านค้า)
+    Route::prefix('shop/custom-orders')->group(function () {
+        Route::post('/{order_id}/update-status', [ShopCustomOrderController::class, 'updateOrderStatus']);
+        Route::post('/{order_id}/confirm-payment', [ShopCustomOrderController::class, 'confirmPayment']);
+        Route::post('/{order_id}/ship', [ShopCustomOrderController::class, 'shipOrder']);
+    });
+
 });
 
+Route::middleware('auth:api')->group(function () {
+    Route::get('/user', function (Request $request) {
+        return $request->user();
+    });
+});
 Route::post('/products', [ProductsController::class, 'store']);
 // เส้นทางสำหรับแก้ไขสินค้า (PUT หรือ PATCH ก็ได้)
 Route::put('/products/{product}', [ProductsController::class, 'update']);

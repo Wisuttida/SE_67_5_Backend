@@ -115,7 +115,7 @@ class ProductsController extends Controller
     public function store(Request $request)
     {
         // ดึงข้อมูลของผู้ใช้ที่เข้าสู่ระบบ
-        // $user = auth()->user();
+        //$user = auth()->user();
         //สำหรับทดสอบระบบ
         $user = \App\Models\User::find(2); // สมมติว่า user_id 2 คือผู้ใช้ที่เราต้องการทดสอบ
 

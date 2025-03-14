@@ -24,4 +24,9 @@ class orders extends Model
     {
         return $this->hasMany(order_items::class, 'orders_order_id', 'order_id');
     }
+
+    public function payment()
+    {
+        return $this->morphOne(payments::class, 'paymentable');
+    }
 }

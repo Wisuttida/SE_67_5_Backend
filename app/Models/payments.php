@@ -12,14 +12,17 @@ class payments extends Model
     protected $primaryKey = 'payment_id'; // กำหนด Primary Key
     public $timestamps = true; // ใช้ timestamp
     protected $fillable = [
-        'orders_order_id',
         'amount',
-        'payment_proof_url', // หรือเปลี่ยนเป็น 'image_url' ถ้าใช้ field นั้น
-        'status'
+        'payment_proof_url',
+        'status',
+        // ไม่ต้องมี orders_order_id อีกแล้ว
+        'paymentable_id',
+        'paymentable_type',
     ];
-    public function order()
-    {
-        return $this->belongsTo(orders::class, 'orders_order_id', 'order_id');
-    }
 
+    // กำหนด polymorphic relationship
+    public function paymentable()
+    {
+        return $this->morphTo();
+    }
 }
