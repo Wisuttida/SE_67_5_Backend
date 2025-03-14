@@ -37,14 +37,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', function (Request $request) {
         return $request->user();
     });
+
 });
 Route::middleware('auth:sanctum')->group(function () {
     // จัดการข้อมูลผู้ใช้ (เฉพาะผู้ดูแลระบบสามารถเข้าถึงได้)
     Route::apiResource('users', UsersController::class);
-
-    // จัดการที่อยู่สำหรับผู้ใช้ที่ล็อกอินอยู่
-    Route::apiResource('addresses', AddressesController::class);
-
+    Route::apiResource('/addresses', AddressesController::class);
 });
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/cart/add', [CartController::class, 'addToCart']); // เพิ่มสินค้าในตะกร้า
