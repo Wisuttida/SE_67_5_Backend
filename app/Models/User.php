@@ -20,6 +20,13 @@ class User extends Authenticatable
     {
         return $this->hasMany(roles::class, 'users_user_id', 'user_id');
     }
+    public function hasRole($roleName)
+    {
+        // สมมติว่า roles แต่ละอันมีความสัมพันธ์กับตำแหน่ง (position) ที่สามารถเข้าถึงชื่อ role ได้
+        return $this->roles->contains(function ($role) use ($roleName) {
+            return $role->position->position_name === $roleName;
+        });
+    }
 
     // กำหนดความสัมพันธ์แบบ many-to-many กับตำแหน่งผ่านตาราง roles
     public function positions()

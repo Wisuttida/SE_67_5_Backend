@@ -15,6 +15,11 @@ use App\Http\Controllers\API\TambonController;
 use App\Http\Controllers\CustomOrderController;
 use App\Http\Controllers\CustomerCustomOrderController;
 use App\Http\Controllers\ShopCustomOrderController;
+use App\Http\Controllers\BuyPostController;
+use App\Http\Controllers\SalesPostController;
+use App\Http\Controllers\SalesOfferController;
+use App\Http\Controllers\BuyOfferController;
+
 
 
 /*
@@ -48,6 +53,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('users', UsersController::class);
     Route::apiResource('/addresses', AddressesController::class);
 });
+
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/cart/add', [CartController::class, 'addToCart']); // เพิ่มสินค้าในตะกร้า
     Route::delete('/cart/remove/{cart_item_id}', [CartController::class, 'removeFromCart']); // ลบสินค้าออกจากตะกร้า
@@ -67,7 +73,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/payments/upload/{order_id}', [PaymentsController::class, 'uploadPaymentProof']); // อัปโหลดหลักฐานการชำระเงิน
     Route::post('/payments/verify/{payment_id}', [PaymentsController::class, 'updatePaymentStatus']); // ยืนยันการชำระเงิน
 
-    
+
     // ------------------ สินค้าสั่งทำ ------------------
     // กลุ่มสำหรับ Custom Orders (สำหรับลูกค้า)
     Route::prefix('custom-orders')->group(function () {
@@ -108,3 +114,37 @@ Route::get('/provinces', [TambonController::class, 'getProvinces']);
 Route::get('/amphoes', [TambonController::class, 'getAmphoes']);
 Route::get('/tambons', [TambonController::class, 'getTambons']);
 Route::get('/zipcodes', [TambonController::class, 'getZipcodes']);
+
+Route::middleware('auth:api')->group(function () {
+
+    // Routes สำหรับ BuyPostController (ผู้ประกอบการโพสต์รับซื้อวัตถุดิบ)
+    Route::get('/buy-posts', [BuyPostController::class, 'index']);
+    Route::post('/buy-posts', [BuyPostController::class, 'store']);
+    Route::put('/buy-posts/{id}', [BuyPostController::class, 'update']);
+    Route::delete('/buy-posts/{id}', [BuyPostController::class, 'destroy']);
+
+    // Routes สำหรับ SalesPostController (เกษตรกรโพสต์ขายวัตถุดิบ)
+    Route::get('/sales-posts', [SalesPostController::class, 'index']);
+    Route::post('/sales-posts', [SalesPostController::class, 'store']);
+    Route::put('/sales-posts/{id}', [SalesPostController::class, 'update']);
+    Route::delete('/sales-posts/{id}', [SalesPostController::class, 'destroy']);
+
+    // Routes สำหรับ SalesOfferController
+    // ใช้สำหรับเกษตรกรยื่นข้อเสนอในโพสต์รับซื้อวัตถุดิบ
+    Route::post('/buy-posts/{buyPostId}/sales-offers', [SalesOfferController::class, 'storeOffer']);
+    // ให้ผู้ประกอบการยืนยันหรือปฏิเสธข้อเสนอ
+    Route::post('/sales-offers/{offerId}/confirm', [SalesOfferController::class, 'confirmOffer']);
+    Route::post('/sales-offers/{offerId}/reject', [SalesOfferController::class, 'rejectOffer']);
+
+    // Routes สำหรับ BuyOfferController
+    // ใช้สำหรับผู้ประกอบการยื่นข้อเสนอในโพสต์ขายวัตถุดิบของเกษตรกร
+    Route::post('/sales-posts/{salesPostId}/buy-offers', [BuyOfferController::class, 'storeOffer']);
+    // ให้เจ้าของฟาร์มยืนยันหรือปฏิเสธข้อเสนอจากผู้ประกอบการ
+    Route::post('/buy-offers/{offerId}/confirm', [BuyOfferController::class, 'confirmOffer']);
+    Route::post('/buy-offers/{offerId}/reject', [BuyOfferController::class, 'rejectOffer']);
+
+    // ตัวอย่างสำหรับ PaymentController (ถ้าต้องการ)
+    Route::post('/orders/{order_id}/upload-payment-proof', [PaymentsController::class, 'uploadPaymentProof']);
+    Route::post('/payments/{payment_id}/update-status', [PaymentsController::class, 'updatePaymentStatus']);
+    Route::get('/shop/payments', [PaymentsController::class, 'listPaymentsForShop']);
+});
