@@ -32,6 +32,11 @@ class addresses extends Model
         'amphoe',
         'tambon',
         'zipcode',
+        'position_id', // เพิ่ม field นี้
     ];
+    public function position()
+    {
+        return $this->belongsTo(Position::class, 'position_id', 'position_id');
+    }
 
 }
