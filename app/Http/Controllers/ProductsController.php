@@ -50,6 +50,7 @@ class ProductsController extends Controller
             'name',
             'price',
             'image_url',
+            'volume',
             'shops_shop_id'
         ])->get();
 
@@ -60,6 +61,7 @@ class ProductsController extends Controller
                 'name' => $product->name,
                 'price' => $product->price,
                 'image_url' => $product->image_url,
+                'volume' => $product->volume,
                 'shop_name' => optional($product->shop)->shop_name,
                 'shop_image' => optional($product->shop)->shop_image, // สมมติว่ามีคอลัมน์ shop_image ในตาราง shops
             ];
@@ -81,6 +83,7 @@ class ProductsController extends Controller
             'name' => $product->name,
             'price' => $product->price,
             'image_url' => $product->image_url,
+            'volume' => $product->volume,
             'shop_name' => optional($product->shop)->shop_name,  // กันกรณี shop เป็น null
             'shop_image' => optional($product->shop)->shop_image,
             'description' => $product->description,
@@ -102,9 +105,9 @@ class ProductsController extends Controller
 
     public function latestProducts()
     {
-        // ดึงเฉพาะคอลัมน์ที่ต้องการ: image_url, name, price
+        // ดึงเฉพาะคอลัมน์ที่ต้องการ: id,image_url, name, price
         // เรียงจากสินค้าที่เพิ่มเข้ามาล่าสุด (created_at DESC)
-        $products = \App\Models\products::select('image_url', 'name', 'price')
+        $products = \App\Models\products::select('product_id', 'image_url', 'name', 'price')
             ->orderBy('created_at', 'desc')
             ->get();
 
