@@ -10,7 +10,7 @@ class buy_post extends Model
     use HasFactory;
     protected $table = 'buy_post';
     protected $primaryKey = 'post_id';
-    public $timestamps = false; // หรือปรับให้เหมาะสมตามความต้องการ
+    public $timestamps = true; // หรือปรับให้เหมาะสมตามความต้องการ
 
     protected $fillable = [
         'description',

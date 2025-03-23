@@ -98,6 +98,7 @@ class CartController extends Controller
 
         return response()->json(['message' => 'เพิ่มสินค้าในตะกร้าแล้ว', 'cart_item' => $cartItem]);
     }
+    
     public function removeFromCart($cart_item_id)
     {
         $cartItem = cart_items::find($cart_item_id);

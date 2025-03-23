@@ -25,7 +25,8 @@ class AddressesController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'receiver_name' => 'required',
+            'fname' => 'required',
+            'lname' => 'required',
             'phonenumber' => 'required',
             'street_name' => 'nullable',
             'building' => 'nullable',
@@ -56,6 +57,7 @@ class AddressesController extends Controller
             'data' => $address
         ], 201);
     }
+
     // แก้ไขที่อยู่
     public function update(Request $request, $id)
     {
@@ -79,7 +81,8 @@ class AddressesController extends Controller
         }
 
         $validated = $request->validate([
-            'receiver_name' => 'sometimes|required',
+            'fname' => 'sometimes|required',
+            'lname' => 'sometimes|required',
             'phonenumber' => 'sometimes|required',
             'street_name' => 'nullable',
             'building' => 'nullable',
@@ -105,6 +108,7 @@ class AddressesController extends Controller
             'data' => $address
         ], 200);
     }
+
     // ลบที่อยู่
     public function destroy(Request $request, $id)
     {

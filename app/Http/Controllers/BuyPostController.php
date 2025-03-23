@@ -31,18 +31,20 @@ class BuyPostController extends Controller
     public function store(Request $request)
     {
         $user = Auth::user();
-        // ตรวจสอบ role: สมมติว่าผู้ประกอบการมี position_id เท่ากับ 1
-        if ($user->role->position_position_id != 1) {
+
+        // ตรวจสอบว่า user มี role ที่ position_position_id เท่ากับ 2 (สำหรับผู้ประกอบการ)
+        $role = $user->roles->firstWhere('position_position_id', 2);  // ใช้ 2 แทน 1 หากเป็นผู้ประกอบการ
+        if (!$role) {
             return response()->json(['error' => 'คุณไม่มีสิทธิ์ดำเนินการนี้'], 403);
         }
 
         // Validate input ที่จำเป็น
         $validator = Validator::make($request->all(), [
-            'ingredients_id'  => 'required|exists:ingredients,ingredient_id',
-            'description'     => 'required|string',
-            'price_per_unit'  => 'required|numeric',
-            'amount'          => 'required|numeric',
-            'unit'            => 'required|in:kg,t,mL,L'
+            'ingredients_id' => 'required|exists:ingredients,ingredient_id',
+            'description' => 'required|string',
+            'price_per_unit' => 'required|numeric',
+            'amount' => 'required|numeric',
+            'unit' => 'required|in:kg,t,mL,L'
         ]);
 
         if ($validator->fails()) {
@@ -52,17 +54,17 @@ class BuyPostController extends Controller
         // สร้างโพสต์รับซื้อใหม่
         $buyPost = buy_post::create([
             'ingredients_ingredient_id' => $request->ingredients_id,
-            'description'               => $request->description,
-            'price_per_unit'            => $request->price_per_unit,
-            'amount'                    => $request->amount,
-            'unit'                      => $request->unit,
-            'shops_shop_id'             => $user->shop->shop_id, // ผู้ประกอบการควรมีความสัมพันธ์กับร้านค้า
-            'status'                    => 'active',
-            'times'                     => now()
+            'description' => $request->description,
+            'price_per_unit' => $request->price_per_unit,
+            'amount' => $request->amount,
+            'unit' => $request->unit,
+            'shops_shop_id' => $user->shop->shop_id, // ผู้ประกอบการควรมีความสัมพันธ์กับร้านค้า
+            'status' => 'active',
         ]);
 
         return response()->json(['message' => 'สร้างโพสต์รับซื้อสำเร็จ', 'buy_post' => $buyPost]);
     }
+
 
     // 1.4 แก้ไขโพสต์รับซื้อ (เฉพาะเจ้าของโพสต์)
     public function update(Request $request, $id)
@@ -78,11 +80,11 @@ class BuyPostController extends Controller
         }
 
         $validator = Validator::make($request->all(), [
-            'ingredients_id'  => 'sometimes|exists:ingredients,ingredient_id',
-            'description'     => 'sometimes|string',
-            'price_per_unit'  => 'sometimes|numeric',
-            'amount'          => 'sometimes|numeric',
-            'unit'            => 'sometimes|in:kg,t,mL,L'
+            'ingredients_id' => 'sometimes|exists:ingredients,ingredient_id',
+            'description' => 'sometimes|string',
+            'price_per_unit' => 'sometimes|numeric',
+            'amount' => 'sometimes|numeric',
+            'unit' => 'sometimes|in:kg,t,mL,L'
         ]);
 
         if ($validator->fails()) {

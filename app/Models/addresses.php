@@ -21,7 +21,8 @@ class addresses extends Model
 
     // กำหนด mass assignable fields (ปรับตามที่คุณต้องการ)
     protected $fillable = [
-        'receiver_name',
+        'fname',               // เปลี่ยนจาก receiver_name เป็น fname
+        'lname',               // เปลี่ยนจาก receiver_name เป็น lname
         'phonenumber',
         'street_name',
         'building',
