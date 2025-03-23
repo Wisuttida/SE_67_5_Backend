@@ -14,7 +14,7 @@ class AddressesController extends Controller
 
         // ดึงที่อยู่ที่ตรงกับผู้ใช้และตำแหน่งที่ตรวจสอบได้
         $addresses = addresses::where('users_user_id', $request->user()->user_id)
-            ->where('position_id', $positionId)
+            // ->where('position_id', $positionId)
             ->get();
 
         return response()->json([
