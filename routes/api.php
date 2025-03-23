@@ -48,10 +48,14 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
 });
+Route::get('/addresses', [AddressesController::class, 'index']);
+Route::post('/addresses', [AddressesController::class, 'store']);
+Route::put('/addresses/{id}', [AddressesController::class, 'update']);
+Route::patch('/addresses/{id}', [AddressesController::class, 'update']);
+Route::delete('/addresses/{id}', [AddressesController::class, 'destroy']);
 Route::middleware('auth:sanctum')->group(function () {
     // จัดการข้อมูลผู้ใช้ (เฉพาะผู้ดูแลระบบสามารถเข้าถึงได้)
     Route::apiResource('users', UsersController::class);
-    Route::apiResource('/addresses', AddressesController::class);
 });
 
 Route::middleware('auth:sanctum')->group(function () {

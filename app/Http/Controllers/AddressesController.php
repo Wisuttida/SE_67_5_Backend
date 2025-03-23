@@ -72,13 +72,13 @@ class AddressesController extends Controller
         }
 
         // ตรวจสอบว่าที่อยู่นั้นอยู่ในตำแหน่งเดียวกับผู้ใช้ปัจจุบัน
-        $positionId = $request->user()->roles()->value('position_position_id');
-        if ($address->position_id !== $positionId) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Position mismatch'
-            ], 403);
-        }
+        // $positionId = $request->user()->roles()->value('position_position_id');
+        // if ($address->position_id !== $positionId) {
+        //     return response()->json([
+        //         'status' => 'error',
+        //         'message' => 'Position mismatch'
+        //     ], 403);
+        // }
 
         $validated = $request->validate([
             'fname' => 'sometimes|required',
