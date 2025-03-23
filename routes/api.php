@@ -115,7 +115,7 @@ Route::get('/amphoes', [TambonController::class, 'getAmphoes']);
 Route::get('/tambons', [TambonController::class, 'getTambons']);
 Route::get('/zipcodes', [TambonController::class, 'getZipcodes']);
 
-Route::middleware('auth:api')->group(function () {
+Route::middleware('auth:sanctum')->group(function () {
 
     // Routes สำหรับ BuyPostController (ผู้ประกอบการโพสต์รับซื้อวัตถุดิบ)
     Route::get('/buy-posts', [BuyPostController::class, 'index']);
