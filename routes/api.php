@@ -62,7 +62,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('/addresses', AddressesController::class);
     Route::put('/user/update', [UsersController::class, 'update']);
     Route::put('/farm/update', [FarmsController::class, 'updateFarm']);
-    Route::put('/shop/update', [ShopsController::class, 'updateShop']);
+    Route::put('/shop/updateProfile', [ShopsController::class, 'updateProfile']);
+    Route::put('/shop/updateBank', [ShopsController::class, 'updateBank']);
+    Route::get('/shop/get', [ShopsController::class, 'show']);
 });
 
 Route::middleware('auth:sanctum')->group(function () {
