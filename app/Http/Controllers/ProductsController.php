@@ -50,6 +50,7 @@ class ProductsController extends Controller
             'name',
             'price',
             'image_url',
+            'gender_target',
             'volume',
             'shops_shop_id'
         ])->get();
@@ -61,6 +62,7 @@ class ProductsController extends Controller
                 'name' => $product->name,
                 'price' => $product->price,
                 'image_url' => $product->image_url,
+                'gender_target' => $product->gender_target,
                 'volume' => $product->volume,
                 'shop_name' => optional($product->shop)->shop_name,
                 'shop_image' => optional($product->shop)->shop_image, // สมมติว่ามีคอลัมน์ shop_image ในตาราง shops

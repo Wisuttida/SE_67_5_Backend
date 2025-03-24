@@ -14,7 +14,7 @@ class AddressesController extends Controller
 
         // ดึงที่อยู่ที่ตรงกับผู้ใช้และตำแหน่งที่ตรวจสอบได้
         $addresses = addresses::where('users_user_id', $request->user()->user_id)
-            ->where('position_id', $positionId)
+            // ->where('position_id', $positionId)
             ->get();
 
         return response()->json([
@@ -72,13 +72,13 @@ class AddressesController extends Controller
         }
 
         // ตรวจสอบว่าที่อยู่นั้นอยู่ในตำแหน่งเดียวกับผู้ใช้ปัจจุบัน
-        $positionId = $request->user()->roles()->value('position_position_id');
-        if ($address->position_id !== $positionId) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Position mismatch'
-            ], 403);
-        }
+        // $positionId = $request->user()->roles()->value('position_position_id');
+        // if ($address->position_id !== $positionId) {
+        //     return response()->json([
+        //         'status' => 'error',
+        //         'message' => 'Position mismatch'
+        //     ], 403);
+        // }
 
         $validated = $request->validate([
             'fname' => 'sometimes|required',
