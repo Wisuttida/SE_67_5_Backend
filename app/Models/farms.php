@@ -25,4 +25,10 @@ class farms extends Model
         'users_user_id',
         'addresses_address_id',
     ];
+    // ในโมเดล Farms
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'users_user_id'); // ตรวจสอบให้ใช้ 'users_user_id' ไม่ใช่ 'user_user_id'
+    }
+
 }

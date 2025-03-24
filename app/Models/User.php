@@ -100,5 +100,10 @@ class User extends Authenticatable
     {
         return $this->hasMany(addresses::class, 'users_user_id', 'user_id');
     }
+    // ในโมเดล User
+    public function farm()
+    {
+        return $this->hasOne(Farms::class, 'users_user_id');  // กำหนดความสัมพันธ์กับคอลัมน์ users_user_id
+    }
 
 }

@@ -19,6 +19,9 @@ use App\Http\Controllers\BuyPostController;
 use App\Http\Controllers\SalesPostController;
 use App\Http\Controllers\SalesOfferController;
 use App\Http\Controllers\BuyOfferController;
+use App\Http\Controllers\FarmsController;
+use App\Http\Controllers\ShopsController;
+
 
 
 
@@ -52,6 +55,9 @@ Route::middleware('auth:sanctum')->group(function () {
     // จัดการข้อมูลผู้ใช้ (เฉพาะผู้ดูแลระบบสามารถเข้าถึงได้)
     Route::apiResource('users', UsersController::class);
     Route::apiResource('/addresses', AddressesController::class);
+    Route::put('/user/update', [UsersController::class, 'update']);
+    Route::put('/farm/update', [FarmsController::class, 'updateFarm']);
+    Route::put('/shop/update', [ShopsController::class, 'updateShop']);
 });
 
 Route::middleware('auth:sanctum')->group(function () {
@@ -116,7 +122,6 @@ Route::get('/tambons', [TambonController::class, 'getTambons']);
 Route::get('/zipcodes', [TambonController::class, 'getZipcodes']);
 
 Route::middleware('auth:sanctum')->group(function () {
-
     // Routes สำหรับ BuyPostController (ผู้ประกอบการโพสต์รับซื้อวัตถุดิบ)
     Route::get('/buy-posts', [BuyPostController::class, 'index']);
     Route::post('/buy-posts', [BuyPostController::class, 'store']);
@@ -130,21 +135,18 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/sales-posts/{id}', [SalesPostController::class, 'destroy']);
 
     // Routes สำหรับ SalesOfferController
-    // ใช้สำหรับเกษตรกรยื่นข้อเสนอในโพสต์รับซื้อวัตถุดิบ
     Route::post('/buy-posts/{buyPostId}/sales-offers', [SalesOfferController::class, 'storeOffer']);
-    // ให้ผู้ประกอบการยืนยันหรือปฏิเสธข้อเสนอ
     Route::post('/sales-offers/{offerId}/confirm', [SalesOfferController::class, 'confirmOffer']);
     Route::post('/sales-offers/{offerId}/reject', [SalesOfferController::class, 'rejectOffer']);
 
     // Routes สำหรับ BuyOfferController
-    // ใช้สำหรับผู้ประกอบการยื่นข้อเสนอในโพสต์ขายวัตถุดิบของเกษตรกร
     Route::post('/sales-posts/{salesPostId}/buy-offers', [BuyOfferController::class, 'storeOffer']);
-    // ให้เจ้าของฟาร์มยืนยันหรือปฏิเสธข้อเสนอจากผู้ประกอบการ
     Route::post('/buy-offers/{offerId}/confirm', [BuyOfferController::class, 'confirmOffer']);
     Route::post('/buy-offers/{offerId}/reject', [BuyOfferController::class, 'rejectOffer']);
 
-    // ตัวอย่างสำหรับ PaymentController (ถ้าต้องการ)
+    // Routes สำหรับ PaymentController
     Route::post('/orders/{order_id}/upload-payment-proof', [PaymentsController::class, 'uploadPaymentProof']);
     Route::post('/payments/{payment_id}/update-status', [PaymentsController::class, 'updatePaymentStatus']);
     Route::get('/shop/payments', [PaymentsController::class, 'listPaymentsForShop']);
+
 });

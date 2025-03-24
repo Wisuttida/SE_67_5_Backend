@@ -30,8 +30,9 @@ class SalesPostController extends Controller
     public function store(Request $request)
     {
         $user = Auth::user();
-        // ตรวจสอบ role: สมมติว่าเกษตรกรมี position_id เท่ากับ 2
-        if ($user->role->position_position_id != 2) {
+        // ตรวจสอบว่า user เป็นเกษตรกร
+        $role = $user->roles->firstWhere('position_position_id', 3);
+        if (!$role) {
             return response()->json(['error' => 'คุณไม่มีสิทธิ์ดำเนินการนี้'], 403);
         }
 
@@ -48,16 +49,23 @@ class SalesPostController extends Controller
             return response()->json(['errors' => $validator->errors()], 422);
         }
 
-        // อัปโหลดรูปภาพและเก็บ path โดยใช้ Storage (เก็บใน disk "public")
+        // อัปโหลดรูปภาพ
         $imagePath = $request->file('image')->store('sales_posts', 'public');
 
+        // ตรวจสอบว่าผู้ใช้งานนี้มี farm_id และใช้ความสัมพันธ์ farm ในการบันทึกโพสต์ขาย
+        $farm = $user->farm;  // การเชื่อมโยงฟาร์มกับผู้ใช้
+        if (!$farm) {
+            return response()->json(['error' => 'ผู้ใช้งานนี้ไม่พบฟาร์ม'], 400);
+        }
+
+        // สร้างโพสต์ขาย
         $salesPost = sales_post::create([
             'ingredients_ingredient_id' => $request->ingredients_id,
             'description' => $request->description,
             'price_per_unit' => $request->price_per_unit,
             'amount' => $request->amount,
             'unit' => $request->unit,
-            'farm_id' => $user->farm->farm_id,  // เกษตรกรมีความสัมพันธ์กับฟาร์ม
+            'farms_farm_id' => $farm->farm_id,  // ระบุ farms_farm_id ที่ถูกต้อง
             'status' => 'active',
             'times' => now(),
             'image_url' => $imagePath
@@ -65,6 +73,7 @@ class SalesPostController extends Controller
 
         return response()->json(['message' => 'สร้างโพสต์ขายสำเร็จ', 'sales_post' => $salesPost]);
     }
+
 
     // 2.4 แก้ไขโพสต์ขาย (เฉพาะเจ้าของโพสต์)
     public function update(Request $request, $id)
