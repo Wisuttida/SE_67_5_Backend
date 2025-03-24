@@ -52,7 +52,10 @@ class ProductsController extends Controller
             'image_url',
             'gender_target',
             'volume',
-            'shops_shop_id'
+            'shops_shop_id',
+            'stock_quantity',
+            'description',
+            'fragrance_strength'
         ])->get();
 
         // map ข้อมูลสินค้าให้รวมข้อมูลจากร้านค้า (ชื่อร้านและรูปร้านค้า)
@@ -65,7 +68,11 @@ class ProductsController extends Controller
                 'gender_target' => $product->gender_target,
                 'volume' => $product->volume,
                 'shop_name' => optional($product->shop)->shop_name,
-                'shop_image' => optional($product->shop)->shop_image, // สมมติว่ามีคอลัมน์ shop_image ในตาราง shops
+                'shop_image' => optional($product->shop)->shop_image,
+                'shops_shop_id' => $product->shops_shop_id,
+                'stock_quantity' => $product->stock_quantity,
+                'description' => $product->description,
+                'fragrance_strength' => $product->fragrance_strength
             ];
         });
 
