@@ -17,39 +17,34 @@ class BuyOfferController extends Controller
     // ฟังก์ชันให้เกษตรกรส่งข้อเสนอ (offer) ตอบโพสต์รับซื้อวัตถุดิบ
     public function storeOffer(Request $request, $buyPostId)
     {
-        // ตรวจสอบว่า user เป็นเจ้าของฟาร์ม (position_id = 3)
+        // ตรวจสอบว่า user เป็นผู้ประกอบการ (position_id = 2)
         $user = Auth::user();
-        $role = $user->roles->firstWhere('position_position_id', 3);
+        $role = $user->roles->firstWhere('position_position_id', 2);  // ใช้ 2 แทน 1 หากเป็นผู้ประกอบการ
         if (!$role) {
-            return response()->json(['error' => 'คุณไม่มีสิทธิ์ยื่นข้อเสนอในโพสต์รับซื้อวัตถุดิบ'], 403);
+            return response()->json(['error' => 'คุณไม่มีสิทธิ์ดำเนินการนี้'], 403);
         }
 
-        // Validate ข้อมูลที่จำเป็น
         $validated = $request->validate([
             'quantity' => 'required|numeric',
             'price_per_unit' => 'required|numeric',
         ]);
 
-        // ค้นหาโพสต์รับซื้อที่ต้องการตอบกลับ
-        $buyPost = buy_post::find($buyPostId);
-        if (!$buyPost) {
-            return response()->json(['error' => 'ไม่พบโพสต์รับซื้อวัตถุดิบที่ระบุ'], 404);
+        // ค้นหาโพสต์ขายวัตถุดิบที่ระบุ
+        $salesPost = sales_post::find($buyPostId);
+        if (!$salesPost) {
+            return response()->json(['error' => 'ไม่พบโพสต์ขายวัตถุดิบที่ระบุ'], 404);
         }
 
-        // สร้าง record สำหรับ buy offer
         $offer = new buy_offers();
         $offer->quantity = $validated['quantity'];
         $offer->price_per_unit = $validated['price_per_unit'];
-        $offer->status = 'pending';
-        $offer->buy_post_post_id = $buyPost->post_id;  // ใส่ buy_post_post_id ที่ตรงกับ buy_post
-        // ตรวจสอบว่าผู้ใช้มีฟาร์มเชื่อมโยงหรือไม่
-        if ($user->farm) {
-            $offer->farms_farm_id = $user->farm->farm_id;
-        } else {
-            return response()->json(['error' => 'ผู้ใช้นี้ไม่มีฟาร์มที่เชื่อมโยง'], 400);
-        }
-        $offer->users_user_id = $user->user_id;
+        $offer->status = 'pending'; // เริ่มต้นเป็น pending
+        // เก็บข้อมูลว่า offer นี้ตอบโพสต์ขายไหน
+        $offer->buy_post_post_id = $buyPostId->post_id;
+        // เก็บ farm_id ที่เชื่อมโยงกับผู้ใช้
+        $offer->farms_farm_id = $user->farm ? $user->farm->farm_id : null;  // เก็บ farm_id จากฟาร์มที่ผู้ใช้เชื่อมโยง
         $offer->save();
+
         return response()->json(['message' => 'ส่งข้อเสนอเรียบร้อยแล้ว', 'offer' => $offer]);
     }
 

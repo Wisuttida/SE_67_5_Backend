@@ -135,6 +135,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/buy-posts/{id}', [BuyPostController::class, 'update']);
     Route::delete('/buy-posts/{id}', [BuyPostController::class, 'destroy']);
 
+    // Routes สำหรับ BuyOfferController
+    Route::post('/buy-offers/{buyPostId}', [BuyOfferController::class, 'storeOffer']);
+    Route::post('/buy-offers/{offerId}/confirm', [BuyOfferController::class, 'confirmOffer']);
+    Route::post('/buy-offers/{offerId}/reject', [BuyOfferController::class, 'rejectOffer']);
+
     // Routes สำหรับ SalesPostController (เกษตรกรโพสต์ขายวัตถุดิบ)
     Route::get('/sales-posts', [SalesPostController::class, 'index']);
     Route::post('/sales-posts', [SalesPostController::class, 'store']);
@@ -142,14 +147,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/sales-posts/{id}', [SalesPostController::class, 'destroy']);
 
     // Routes สำหรับ SalesOfferController
-    Route::post('/buy-posts/{buyPostId}/sales-offers', [SalesOfferController::class, 'storeOffer']);
+    Route::post('/sales-offers/{salesPostId}', [SalesOfferController::class, 'storeOffer']);
     Route::post('/sales-offers/{offerId}/confirm', [SalesOfferController::class, 'confirmOffer']);
     Route::post('/sales-offers/{offerId}/reject', [SalesOfferController::class, 'rejectOffer']);
 
-    // Routes สำหรับ BuyOfferController
-    Route::post('/sales-posts/{salesPostId}/buy-offers', [BuyOfferController::class, 'storeOffer']);
-    Route::post('/buy-offers/{offerId}/confirm', [BuyOfferController::class, 'confirmOffer']);
-    Route::post('/buy-offers/{offerId}/reject', [BuyOfferController::class, 'rejectOffer']);
 
     // Routes สำหรับ PaymentController
     Route::post('/orders/{order_id}/upload-payment-proof', [PaymentsController::class, 'uploadPaymentProof']);

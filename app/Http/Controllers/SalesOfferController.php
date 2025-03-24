@@ -35,16 +35,14 @@ class SalesOfferController extends Controller
             return response()->json(['error' => 'ไม่พบโพสต์ขายวัตถุดิบที่ระบุ'], 404);
         }
 
-        $offer = new buy_offers();
+        $offer = new sales_offers();
         $offer->quantity = $validated['quantity'];
         $offer->price_per_unit = $validated['price_per_unit'];
         $offer->status = 'pending'; // เริ่มต้นเป็น pending
         // เก็บข้อมูลว่า offer นี้ตอบโพสต์ขายไหน
-        $offer->buy_post_post_id = $salesPost->post_id;
-        // บันทึก farm id จากโพสต์ขาย (เพื่อใช้ตรวจสอบในการยืนยัน/ปฏิเสธ)
-        $offer->farms_farm_id = $salesPost->farms_farm_id;
-        // *** คำแนะนำ: อาจเพิ่มคอลัมน์ users_user_id ใน buy_offers เพื่อบันทึก user id ของผู้ประกอบการที่ส่ง offer ***
-        $offer->users_user_id = $user->user_id;
+        $offer->sales_post_post_id = $salesPost->post_id;
+        // เก็บ shop_id ที่เชื่อมโยงกับผู้ใช้
+        $offer->shops_shop_id = $user->shops ? $user->shops->shop_id : null;  // เก็บ shop_id จากฟาร์มที่ผู้ใช้เชื่อมโยง
         $offer->save();
 
         return response()->json(['message' => 'ส่งข้อเสนอเรียบร้อยแล้ว', 'offer' => $offer]);
