@@ -64,6 +64,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/farm/update', [FarmsController::class, 'updateFarm']);
     Route::put('/shop/updateProfile', [ShopsController::class, 'updateProfile']);
     Route::put('/shop/updateBank', [ShopsController::class, 'updateBank']);
+    Route::put('/shop/updateDescription', [ShopsController::class, 'updateDescription']);
     Route::get('/shop/get', [ShopsController::class, 'show']);
 });
 

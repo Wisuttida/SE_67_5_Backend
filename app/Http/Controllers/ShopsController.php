@@ -35,6 +35,31 @@ class ShopsController extends Controller
             'data' => $shop
         ]);
     }
+    public function updateDescription(Request $request)
+    {
+        $user = Auth::user();
+        $shop = shops::where('users_user_id', $user->user_id)->first();
+
+        if (!$shop) {
+            return response()->json(['message' => 'Shop not found'], 404);
+        }
+
+        // ตรวจสอบข้อมูลที่รับมา
+        $request->validate([
+            'description' => 'sometimes|required|string',
+        ]);
+
+        // อัปเดตข้อมูลร้านค้า
+        $shop->update([
+            'description' => $request->description
+        ]);
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Shop updated successfully',
+            'data' => $shop
+        ]);
+    }
     public function updateBank(Request $request)
     {
         $user = Auth::user();

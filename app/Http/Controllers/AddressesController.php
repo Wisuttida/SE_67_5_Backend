@@ -25,17 +25,18 @@ class AddressesController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'fname' => 'required',
-            'lname' => 'required',
-            'phonenumber' => 'required',
-            'street_name' => 'nullable',
-            'building' => 'nullable',
-            'house_number' => 'required',
+            'fname' => 'sometimes|required',
+            'lname' => 'sometimes|required',
+            'phonenumber' => 'sometimes|required',
+            'street_name' => 'sometimes|nullable',
+            'building' => 'sometimes|nullable',
+            'house_number' => 'sometimes|required',
             'province' => 'sometimes|required',
-            'amphoe' => 'sometimes|required',
-            'tambon' => 'sometimes|required',
+            'district' => 'sometimes|required',
+            'subDistrict' => 'sometimes|required',
             'zipcode' => 'sometimes|required',
-            'is_default' => 'boolean',
+            'position_id' => 'sometimes|required',
+            'is_default' => 'sometimes|boolean',
         ]);
 
         // หาก is_default เป็น true ให้เปลี่ยนค่า is_default ของที่อยู่อื่น ๆ ของผู้ใช้เป็น 0
@@ -71,32 +72,24 @@ class AddressesController extends Controller
             ], 403);
         }
 
-        // ตรวจสอบว่าที่อยู่นั้นอยู่ในตำแหน่งเดียวกับผู้ใช้ปัจจุบัน
-        // $positionId = $request->user()->roles()->value('position_position_id');
-        // if ($address->position_id !== $positionId) {
-        //     return response()->json([
-        //         'status' => 'error',
-        //         'message' => 'Position mismatch'
-        //     ], 403);
-        // }
-
         $validated = $request->validate([
             'fname' => 'sometimes|required',
             'lname' => 'sometimes|required',
             'phonenumber' => 'sometimes|required',
-            'street_name' => 'nullable',
-            'building' => 'nullable',
+            'street_name' => 'sometimes|nullable',
+            'building' => 'sometimes|nullable',
             'house_number' => 'sometimes|required',
             'province' => 'sometimes|required',
-            'amphoe' => 'sometimes|required',
-            'tambon' => 'sometimes|required',
+            'district' => 'sometimes|required',
+            'subDistrict' => 'sometimes|required',
             'zipcode' => 'sometimes|required',
-            'is_default' => 'boolean',
+            'position_id' => 'sometimes|required',
+            'is_default' => 'sometimes|boolean',
         ]);
 
         // หากอัปเดตเป็น default ให้เปลี่ยนค่า is_default ของที่อยู่อื่น ๆ ของผู้ใช้เป็น 0
         if (isset($validated['is_default']) && $validated['is_default']) {
-            addresses::where('users_user_id', $request->user()->user_id)
+            addresses::where('users_user_id', $request->user()->user_id)->where('position_id', $request->position_id)
                 ->update(['is_default' => 0]);
         }
 
