@@ -30,8 +30,8 @@ class addresses extends Model
         'is_default',
         'users_user_id',
         'province',
-        'amphoe',
-        'tambon',
+        'district',
+        'subDistrict',
         'zipcode',
         'position_id', // เพิ่ม field นี้
     ];

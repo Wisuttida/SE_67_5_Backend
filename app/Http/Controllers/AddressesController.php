@@ -41,7 +41,7 @@ class AddressesController extends Controller
 
         // หาก is_default เป็น true ให้เปลี่ยนค่า is_default ของที่อยู่อื่น ๆ ของผู้ใช้เป็น 0
         if (isset($validated['is_default']) && $validated['is_default']) {
-            addresses::where('users_user_id', $request->user()->user_id)
+            addresses::where('users_user_id', $request->user()->user_id)->where('position_id', $request->position_id)
                 ->update(['is_default' => 0]);
         }
 
