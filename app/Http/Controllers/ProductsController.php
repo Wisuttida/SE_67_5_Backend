@@ -93,6 +93,7 @@ class ProductsController extends Controller
             'price' => $product->price,
             'image_url' => $product->image_url,
             'volume' => $product->volume,
+            'shops_shop_id' => $product->shops_shop_id,
             'shop_name' => optional($product->shop)->shop_name,  // กันกรณี shop เป็น null
             'shop_image' => optional($product->shop)->shop_image,
             'description' => $product->description,
