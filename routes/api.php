@@ -21,7 +21,7 @@ use App\Http\Controllers\SalesOfferController;
 use App\Http\Controllers\BuyOfferController;
 use App\Http\Controllers\FarmsController;
 use App\Http\Controllers\ShopsController;
-
+use App\Http\Controllers\IngredientOrdersController;
 
 
 
@@ -173,4 +173,17 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/payments/farm', [PaymentsController::class, 'listPaymentsForFarm']);
     //Route::post('/payments/ingredient-orders/{ingredientOrderId}/upload-proof', [PaymentsController::class, 'uploadPaymentProofForIngredientOrder']);
     Route::post('/payments/ingredient-orders/{paymentId}/update-status', [PaymentsController::class, 'updatePaymentStatusForIngredientOrder']);
+    // Route สำหรับแสดงสถานะคำสั่งซื้อของร้านค้า
+    Route::get('/ingredient-orders/shop', [IngredientOrdersController::class, 'showOrderStatusForShop']);
+    // Route สำหรับแสดงสถานะคำสั่งซื้อของฟาร์ม
+    Route::get('/ingredient-orders/farm', [IngredientOrdersController::class, 'showOrderStatusForFarm']);
+    // Route สำหรับแสดงคำสั่งซื้อที่กรองตามสถานะของร้าน
+    Route::get('/ingredient-orders/shop', [IngredientOrdersController::class, 'showOrdersByStatusForShop']);
+    // Route สำหรับแสดงคำสั่งซื้อที่กรองตามสถานะของฟาร์ม
+    Route::get('/ingredient-orders/farm', [IngredientOrdersController::class, 'showOrdersByStatusForFarm']);
+    // Route สำหรับแสดงรายละเอียดคำสั่งซื้อ
+    Route::get('/ingredient-orders/{orderId}', [IngredientOrdersController::class, 'showOrderDetails']);
+
+    // Route สำหรับแก้ไขสถานะคำสั่งซื้อของฟาร์ม
+    Route::put('/ingredient-orders/{orderId}/update-status', [IngredientOrdersController::class, 'updateOrderStatusForFarm']);
 });
