@@ -42,7 +42,8 @@ class SalesOfferController extends Controller
         // เก็บข้อมูลว่า offer นี้ตอบโพสต์ขายไหน
         $offer->sales_post_post_id = $salesPost->post_id;
         // เก็บ shop_id ที่เชื่อมโยงกับผู้ใช้
-        $offer->shops_shop_id = $user->shops ? $user->shops->shop_id : null;  // เก็บ shop_id จากฟาร์มที่ผู้ใช้เชื่อมโยง
+        $offer->shops_shop_id = $user->shop ? $user->shop->shop_id : null;
+        // เก็บ shop_id จากฟาร์มที่ผู้ใช้เชื่อมโยง
         $offer->save();
 
         return response()->json(['message' => 'ส่งข้อเสนอเรียบร้อยแล้ว', 'offer' => $offer]);
@@ -52,19 +53,19 @@ class SalesOfferController extends Controller
     public function confirmOffer($offerId)
     {
         $user = Auth::user();
+        // ตรวจสอบให้แน่ใจว่า user เป็นเกษตรกร (position_id = 3)
         if ($user->role->position_position_id != 3) {
             return response()->json(['error' => 'คุณไม่มีสิทธิ์ยืนยันข้อเสนอ'], 403);
         }
 
-        $offer = sales_offers::find($offerId);
+        $offer = \App\Models\SalesOffer::find($offerId);
         if (!$offer) {
             return response()->json(['error' => 'ไม่พบข้อเสนอ'], 404);
         }
         if ($offer->status != 'submit') {
             return response()->json(['error' => 'ข้อเสนอไม่อยู่ในสถานะ submit'], 400);
         }
-
-        // ตรวจสอบว่า offer นี้เกี่ยวข้องกับฟาร์มของเจ้าของฟาร์มที่ล็อกอินอยู่
+        // ตรวจสอบว่า offer นี้เกี่ยวข้องกับฟาร์มของเกษตรกรที่ล็อกอินอยู่
         if ($offer->farms_farm_id != $user->farm->farm_id) {
             return response()->json(['error' => 'ข้อเสนอนี้ไม่เกี่ยวข้องกับฟาร์มของคุณ'], 403);
         }
@@ -72,25 +73,35 @@ class SalesOfferController extends Controller
         $offer->status = 'confirmed';
         $offer->save();
 
-        // สร้างคำสั่งซื้อ (order) เมื่อข้อเสนอได้รับการยืนยัน
+        // คำนวณยอดรวม (total)
         $totalAmount = $offer->quantity * $offer->price_per_unit;
 
-        // ดึงข้อมูลผู้ประกอบการ (buyer) จาก offer โดยใช้ users_user_id
-        $buyer = User::find($offer->users_user_id);
+        // ดึงข้อมูลผู้ซื้อ (ผู้ประกอบการ) จาก offer
+        $buyer = \App\Models\User::find($offer->users_user_id);
+        if (!$buyer) {
+            return response()->json(['error' => 'ไม่พบข้อมูลผู้ซื้อ'], 404);
+        }
         $defaultAddress = $buyer->addresses()->where('is_default', 1)->first();
+        if (!$defaultAddress) {
+            return response()->json(['error' => 'ผู้ซื้อไม่มีที่อยู่หลัก'], 400);
+        }
 
-        $order = new orders();
-        $order->total_amount = $totalAmount;
-        $order->status = 'pending';
-        $order->addresses_address_id = $defaultAddress ? $defaultAddress->address_id : null;
-        $order->shops_shop_id = $buyer->shop->shop_id;
-        $order->users_user_id = $buyer->user_id;
-        $order->save();
+        // สร้าง Ingredient Order ใหม่
+        $ingredientOrder = new \App\Models\IngredientOrder();
+        $ingredientOrder->total = $totalAmount;
+        $ingredientOrder->status = 'pending';
+        $ingredientOrder->farms_farm_id = $user->farm->farm_id;  // ผู้ขาย: ฟาร์มของเกษตรกรที่ยืนยัน
+        $ingredientOrder->shops_shop_id = $buyer->shop->shop_id;     // ผู้ซื้อ: ร้านของผู้ประกอบการ
+        $ingredientOrder->addresses_address_id = $defaultAddress->address_id;
+        // ระบุความสัมพันธ์กับ sales offer (ในกรณีนี้ buy offer จะเป็น null)
+        $ingredientOrder->sales_offers_sales_offers_id = $offer->sales_offers_id;
+        $ingredientOrder->buy_offers_buy_offers_id = null;
+        $ingredientOrder->save();
 
         return response()->json([
-            'message' => 'ข้อเสนอได้รับการยืนยันและสร้างคำสั่งซื้อแล้ว',
+            'message' => 'ข้อเสนอได้รับการยืนยันและสร้าง Ingredient Order แล้ว',
             'offer' => $offer,
-            'order' => $order
+            'ingredient_order' => $ingredientOrder,
         ]);
     }
 

@@ -39,7 +39,8 @@ class BuyOfferController extends Controller
         $offer->price_per_unit = $validated['price_per_unit'];
         $offer->status = 'submit'; // เริ่มต้นเป็น submit
         // เก็บข้อมูลว่า offer นี้ตอบโพสต์ขายไหน
-        $offer->buy_post_post_id = $buyPostId->post_id;
+        $offer->buy_post_post_id = $buyPost->post_id;
+
         // เก็บ farm_id ที่เชื่อมโยงกับผู้ใช้
         $offer->farms_farm_id = $user->farm ? $user->farm->farm_id : null;  // เก็บ farm_id จากฟาร์มที่ผู้ใช้เชื่อมโยง
         $offer->save();
@@ -52,65 +53,61 @@ class BuyOfferController extends Controller
     public function confirmOffer($offerId)
     {
         $user = Auth::user();
-
-        // ตรวจสอบว่าผู้ใช้งานได้รับการยืนยัน (ล็อกอินแล้วหรือไม่)
         if (!$user) {
-            return response()->json(['error' => 'คุณต้องล็อกอินก่อน'], 401); // ถ้าผู้ใช้ไม่ได้ล็อกอิน
+            return response()->json(['error' => 'คุณต้องล็อกอินก่อน'], 401);
         }
-
-        // ตรวจสอบว่า user เป็นผู้ประกอบการหรือไม่ (position_id = 2)
-        $role = $user->roles->firstWhere('position_position_id', 2);  // ตรวจสอบตำแหน่งผู้ประกอบการ
+        // ตรวจสอบให้แน่ใจว่า user เป็นผู้ประกอบการ (position_id = 2)
+        $role = $user->roles->firstWhere('position_position_id', 2);
         if (!$role) {
-            return response()->json(['error' => 'คุณไม่มีสิทธิ์ยืนยันข้อเสนอ'], 403); // ถ้าไม่ใช่ผู้ประกอบการ
+            return response()->json(['error' => 'คุณไม่มีสิทธิ์ยืนยันข้อเสนอ'], 403);
         }
 
-        // ค้นหาข้อเสนอโดยใช้ buy_offers_id แทน id
-        $offer = buy_offers::where('buy_offers_id', $offerId)->first();
-
+        // ค้นหาข้อเสนอในตาราง buy_offers
+        $offer = \App\Models\buy_offers::where('buy_offers_id', $offerId)->first();
         if (!$offer) {
-            return response()->json(['error' => 'ไม่พบข้อเสนอ'], 404); // ถ้าไม่พบข้อเสนอ
+            return response()->json(['error' => 'ไม่พบข้อเสนอ'], 404);
         }
-
         if ($offer->status != 'submit') {
-            return response()->json(['error' => 'ข้อเสนอไม่อยู่ในสถานะ submit'], 400); // ถ้าสถานะไม่ใช่ submit
+            return response()->json(['error' => 'ข้อเสนอไม่อยู่ในสถานะ submit'], 400);
         }
-
-        // ตรวจสอบว่า offer นี้เกี่ยวข้องกับฟาร์มของเจ้าของฟาร์มที่ล็อกอินอยู่
+        // ตรวจสอบว่า offer นี้เกี่ยวข้องกับฟาร์มของเกษตรกรที่ส่ง offer หรือไม่
         if ($offer->farms_farm_id != $user->farm->farm_id) {
-            return response()->json(['error' => 'ข้อเสนอนี้ไม่เกี่ยวข้องกับฟาร์มของคุณ'], 403); // ตรวจสอบฟาร์ม
+            return response()->json(['error' => 'ข้อเสนอนี้ไม่เกี่ยวข้องกับฟาร์มของคุณ'], 403);
         }
 
-        // เปลี่ยนสถานะของข้อเสนอเป็น confirmed
+        // เปลี่ยนสถานะเป็น confirmed
         $offer->status = 'confirmed';
         $offer->save();
 
-        if (!$user) {
-            return response()->json(['error' => 'ไม่พบผู้ประกอบการ'], 404); // หากไม่พบผู้ประกอบการ
-        }
+        // คำนวณยอดรวม (total) จาก quantity กับ price_per_unit
+        $totalAmount = $offer->quantity * $offer->price_per_unit;
 
-        // ตรวจสอบที่อยู่หลักของผู้ประกอบการ (buyer)
-        $defaultAddress = $user->addresses()->where('is_default', 1)->first();
+        // ดึงที่อยู่หลักของผู้ซื้อ (ผู้ประกอบการ)
+        $buyer = $user;
+        $defaultAddress = $buyer->addresses()->where('is_default', 1)->first();
         if (!$defaultAddress) {
             return response()->json(['error' => 'ผู้ประกอบการไม่มีที่อยู่หลัก'], 400);
         }
 
-        // สร้างคำสั่งซื้อ (order) เมื่อข้อเสนอได้รับการยืนยัน
-        $totalAmount = $offer->quantity * $offer->price_per_unit;
-
-        $order = new orders();
-        $order->total_amount = $totalAmount;
-        $order->status = 'pending';
-        $order->addresses_address_id = $defaultAddress->address_id;
-        $order->shops_shop_id = $user->shop->shop_id;
-        $order->users_user_id = $user->user_id;
-        $order->save();
+        // สร้าง Ingredient Order ใหม่
+        $ingredientOrder = new \App\Models\ingredient_orders();
+        $ingredientOrder->total = $totalAmount;
+        $ingredientOrder->status = 'pending';
+        $ingredientOrder->farms_farm_id = $offer->farms_farm_id; // ผู้ขาย: ฟาร์มของเกษตรกร
+        $ingredientOrder->shops_shop_id = $buyer->shop->shop_id;    // ผู้ซื้อ: ร้านของผู้ประกอบการ
+        $ingredientOrder->addresses_address_id = $defaultAddress->address_id;
+        // ระบุความสัมพันธ์กับ buy offer (ในกรณีนี้ sales offer จะเป็น null)
+        $ingredientOrder->buy_offers_buy_offers_id = $offer->buy_offers_id;
+        $ingredientOrder->sales_offers_sales_offers_id = null;
+        $ingredientOrder->save();
 
         return response()->json([
-            'message' => 'ข้อเสนอได้รับการยืนยันและสร้างคำสั่งซื้อแล้ว',
+            'message' => 'ข้อเสนอได้รับการยืนยันและสร้าง Ingredient Order แล้ว',
             'offer' => $offer,
-            'order' => $order
+            'ingredient_order' => $ingredientOrder,
         ]);
     }
+
     // ฟังก์ชันให้ผู้ประกอบการปฏิเสธข้อเสนอของเกษตรกร
     public function rejectOffer($offerId)
     {
