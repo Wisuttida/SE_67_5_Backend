@@ -26,4 +26,11 @@ class shops extends Model
         'users_user_id',
         'addresses_address_id',
     ];
+    public function address()
+    {
+        // belongsTo(Address::class, 'ชื่อคอลัมน์ foreign key ใน shops', 'ชื่อคอลัมน์ primary key ใน addresses')
+        return $this->belongsTo(addresses::class, 'addresses_address_id', 'address_id');
+    }
+
+
 }

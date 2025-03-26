@@ -9,6 +9,11 @@ use App\Models\User;
 use App\Models\sales_post;
 use App\Models\buy_post;
 use App\Models\orders;
+use App\Models\ingredient_orders;
+use App\Models\shops;
+use App\Models\addresses;
+use App\Models\farms;
+
 use Illuminate\Support\Facades\Auth;
 
 
@@ -76,21 +81,21 @@ class SalesOfferController extends Controller
         $offer->status = 'confirmed';
         $offer->save();
         $totalAmount = $offer->quantity * $offer->price_per_unit;
-        $buyerShop = \App\Models\Shops::find($offer->shops_shop_id);
+        $buyerShop = \App\Models\shops::find($offer->shops_shop_id);
         if (!$buyerShop) {
             return response()->json(['error' => 'ไม่พบข้อมูลร้านของผู้ซื้อ'], 404);
         }
 
-        $defaultAddress = $buyerShop->address;
+        // ดึงข้อมูล Address object โดยใช้ ID จาก shops
+        $defaultAddress = \App\Models\addresses::find($buyerShop->addresses_address_id);
         if (!$defaultAddress) {
             return response()->json(['error' => 'ร้านของผู้ซื้อไม่มีที่อยู่หลัก'], 400);
         }
-
         $ingredientOrder = new ingredient_orders();
         $ingredientOrder->total = $totalAmount;
         $ingredientOrder->status = 'pending';
         $ingredientOrder->farms_farm_id = $user->farm->farm_id;
-        $ingredientOrder->shops_shop_id = $buyer->shop->shop_id;
+        $ingredientOrder->shops_shop_id = $offer->shops_shop_id;
         $ingredientOrder->addresses_address_id = $defaultAddress->address_id;
         $ingredientOrder->sales_offers_sales_offers_id = $offer->sales_offers_id;
         $ingredientOrder->buy_offers_buy_offers_id = null;
