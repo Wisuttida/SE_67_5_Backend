@@ -13,6 +13,36 @@ use Illuminate\Http\Request;
 
 class BuyOfferController extends Controller
 {
+
+    //ดู details offers แต่ละ offers
+    public function showOfferDetails($offerId)
+    {
+        // ดึงข้อมูลข้อเสนอจากตาราง buy_offers
+        $offer = buy_offers::find($offerId);
+        if (!$offer) {
+            return response()->json(['error' => 'ไม่พบข้อเสนอ'], 404);
+        }
+
+        // ดึงข้อมูลฟาร์มจากตาราง farms โดยใช้ farms_farm_id ที่บันทึกไว้ในข้อเสนอ
+        $farm = \App\Models\farms::find($offer->farms_farm_id);
+        if (!$farm) {
+            return response()->json(['error' => 'ไม่พบข้อมูลฟาร์มที่เกี่ยวข้อง'], 404);
+        }
+
+        // สร้าง response โดยรวมข้อมูลข้อเสนอและข้อมูลฟาร์มที่ต้องการ
+        return response()->json([
+            'offer' => $offer,
+            'farm' => [
+                'farm_image' => $farm->farm_image,
+                'farm_name' => $farm->farm_name,
+                'bank_name' => $farm->bank_name,
+                'bank_account' => $farm->bank_account,
+                'bank_number' => $farm->bank_number,
+            ]
+        ]);
+    }
+
+
     // ฟังก์ชันให้เกษตรกรส่งข้อเสนอ (offer) ตอบโพสต์รับซื้อวัตถุดิบ
     public function storeOffer(Request $request, $buyPostId)
     {

@@ -87,6 +87,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/payments/upload/{order_id}', [PaymentsController::class, 'uploadPaymentProof']); // อัปโหลดหลักฐานการชำระเงิน
     Route::post('/payments/verify/{payment_id}', [PaymentsController::class, 'updatePaymentStatus']); // ยืนยันการชำระเงิน
 
+    Route::get('/shops/accepted', [ShopCustomOrderController::class, 'getAcceptedShops']);
 
     // ------------------ สินค้าสั่งทำ ------------------
     // กลุ่มสำหรับ Custom Orders (สำหรับลูกค้า)
@@ -135,6 +136,8 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Route สำหรับเรียกดูโพสต์ขายทั้งหมด
     Route::get('/show-salesposts', [SalesPostController::class, 'showSalesPosts']);
+
+    Route::get('/buy-offers/{offerId}/details', [BuyOfferController::class, 'showOfferDetails']);
 
     // Routes สำหรับ BuyPostController (ผู้ประกอบการโพสต์รับซื้อวัตถุดิบ)
     Route::get('/buy-posts', [BuyPostController::class, 'index']);
