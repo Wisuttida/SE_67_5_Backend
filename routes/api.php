@@ -169,4 +169,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/payments/{payment_id}/update-status', [PaymentsController::class, 'updatePaymentStatus']);
     Route::get('/shop/payments', [PaymentsController::class, 'listPaymentsForShop']);
 
+    //การตรวจสอบหลักฐานการชำระเงินของ farm
+    Route::get('/payments/farm', [PaymentsController::class, 'listPaymentsForFarm']);
+    //Route::post('/payments/ingredient-orders/{ingredientOrderId}/upload-proof', [PaymentsController::class, 'uploadPaymentProofForIngredientOrder']);
+    Route::post('/payments/ingredient-orders/{paymentId}/update-status', [PaymentsController::class, 'updatePaymentStatusForIngredientOrder']);
 });

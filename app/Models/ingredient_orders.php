@@ -31,8 +31,9 @@ class ingredient_orders extends Model
     // ตัวอย่างการกำหนดความสัมพันธ์กับ Model อื่น (ถ้าจำเป็น)
     public function farm()
     {
-        return $this->belongsTo(farms::class, 'farms_farm_id');
+        return $this->belongsTo(farms::class, 'farms_farm_id', 'farm_id');
     }
+
 
     public function shop()
     {
@@ -54,4 +55,9 @@ class ingredient_orders extends Model
     {
         return $this->belongsTo(buy_offers::class, 'buy_offers_buy_offers_id');
     }
+    public function payment()
+    {
+        return $this->morphOne(payments::class, 'paymentable');
+    }
+
 }
