@@ -49,36 +49,64 @@ class UsersController extends Controller
         ], 201);
     }
 
-    // แก้ไขข้อมูลโปรไฟล์ผู้ใช้
-    public function update(Request $request)
+    public function updateProfile(Request $request)
     {
-        // ดึงข้อมูลผู้ใช้ที่ล็อกอินอยู่
         $user = Auth::user();
+        $userData = User::where('user_id', $user->user_id)->first();
 
-        // ตรวจสอบข้อมูลที่รับมา
-        $validated = $request->validate([
-            'username' => 'sometimes|required|unique:users,username,' . $user->user_id . ',user_id',
-            'email' => 'sometimes|required|email|unique:users,email,' . $user->user_id . ',user_id',
-            'password' => 'sometimes|required|min:6',
-            'phone_number' => 'sometimes|required',
-            'first_name' => 'sometimes|required',
-            'last_name' => 'sometimes|required'
-        ]);
-
-        // หากมีการอัปเดตรหัสผ่าน ให้แปลงรหัสผ่านใหม่
-        if (isset($validated['password'])) {
-            $validated['password'] = Hash::make($validated['password']);
+        if (!$userData) {
+            return response()->json(['message' => 'User not found'], 404);
         }
 
-        // อัปเดตข้อมูลผู้ใช้
-        $user->update($validated);
+        // ตรวจสอบข้อมูลที่รับมา
+        $request->validate([
+            'first_name' => 'sometimes|required|string|max:255',
+            'last_name' => 'sometimes|required|string|max:255',
+            'profile_image' => 'sometimes|required|string',
+        ]);
+
+        $userData->update([
+            'first_name' => $request->first_name,
+            'last_name' => $request->last_name,
+            'profile_image' => $request->profile_image,
+        ]);
 
         return response()->json([
             'status' => 'success',
-            'message' => 'User profile updated successfully',
-            'data' => $user
-        ], 200);
+            'message' => 'Shop updated successfully',
+            'data' => $userData
+        ]);
     }
+    // แก้ไขข้อมูลโปรไฟล์ผู้ใช้
+    // public function update(Request $request)
+    // {
+    //     // ดึงข้อมูลผู้ใช้ที่ล็อกอินอยู่
+    //     $user = Auth::user();
+
+    //     // ตรวจสอบข้อมูลที่รับมา
+    //     $validated = $request->validate([
+    //         'username' => 'sometimes|required|unique:users,username,' . $user->user_id . ',user_id',
+    //         'email' => 'sometimes|required|email|unique:users,email,' . $user->user_id . ',user_id',
+    //         'password' => 'sometimes|required|min:6',
+    //         'phone_number' => 'sometimes|required',
+    //         'first_name' => 'sometimes|required',
+    //         'last_name' => 'sometimes|required'
+    //     ]);
+
+    //     // หากมีการอัปเดตรหัสผ่าน ให้แปลงรหัสผ่านใหม่
+    //     if (isset($validated['password'])) {
+    //         $validated['password'] = Hash::make($validated['password']);
+    //     }
+
+    //     // อัปเดตข้อมูลผู้ใช้
+    //     $user->update($validated);
+
+    //     return response()->json([
+    //         'status' => 'success',
+    //         'message' => 'User profile updated successfully',
+    //         'data' => $user
+    //     ], 200);
+    // }
 
     // ลบผู้ใช้
     public function destroy($id)

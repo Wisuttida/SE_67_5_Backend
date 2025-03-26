@@ -61,7 +61,8 @@ Route::middleware('auth:sanctum')->group(function () {
     // จัดการข้อมูลผู้ใช้ (เฉพาะผู้ดูแลระบบสามารถเข้าถึงได้)
     Route::apiResource('users', UsersController::class);
     Route::apiResource('/addresses', AddressesController::class);
-    Route::put('/user/update', [UsersController::class, 'update']);
+    Route::put('/user/updateProfile', [UsersController::class, 'updateProfile']);
+    Route::get('/user/get/{id}', [UsersController::class, 'show']);
     Route::put('/farm/update', [FarmsController::class, 'updateFarm']);
     Route::put('/shop/updateProfile', [ShopsController::class, 'updateProfile']);
     Route::put('/shop/updateBank', [ShopsController::class, 'updateBank']);

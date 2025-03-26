@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ingredients;
 use App\Models\sales_post;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
@@ -12,7 +13,7 @@ class SalesPostController extends Controller
     // 2.1 แสดงรายการโพสต์ขายทั้งหมด
     public function index()
     {
-        $salesPosts = sales_post::all();
+        $salesPosts = sales_post::with('ingredients')->get();
         return response()->json(['sales_posts' => $salesPosts]);
     }
     // Controller function to show all Sales Posts
@@ -24,6 +25,8 @@ class SalesPostController extends Controller
 
         $salesPostsData = $salesPosts->map(function ($salesPost) {
             return [
+                'post_id' => $salesPost->post_id,
+                'farm_id' => $salesPost->farm ? $salesPost->farm->farm_id : null,
                 'farm_image' => $salesPost->farm ? $salesPost->farm->farm_image : null,  // รูปภาพฟาร์ม
                 'farm_name' => $salesPost->farm ? $salesPost->farm->farm_name : 'ไม่มีชื่อฟาร์ม', // ชื่อฟาร์ม
                 'description' => $salesPost->description, // รายละเอียดโพสต์

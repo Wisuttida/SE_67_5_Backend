@@ -54,9 +54,6 @@ class AddressesController extends Controller
                 ->update(['is_default' => 0]);
         }
 
-        // รับตำแหน่งปัจจุบันของผู้ใช้
-        $positionId = $request->user()->roles()->value('position_position_id');
-        $validated['position_id'] = $positionId;
         $validated['users_user_id'] = $request->user()->user_id;
 
         $address = addresses::create($validated);

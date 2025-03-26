@@ -26,6 +26,8 @@ class BuyPostController extends Controller
 
         $buyPostsData = $buyPosts->map(function ($buyPost) {
             return [
+                'post_id' => $buyPost->post_id,
+                'shop_id' => $buyPost->shop ? $buyPost->shop->shop_id : null,
                 'shop_image' => $buyPost->shop ? $buyPost->shop->shop_image : null,  // รูปภาพร้าน
                 'shop_name' => $buyPost->shop ? $buyPost->shop->shop_name : 'ไม่มีชื่อร้าน', // ชื่อร้าน
                 'description' => $buyPost->description, // รายละเอียดโพสต์
