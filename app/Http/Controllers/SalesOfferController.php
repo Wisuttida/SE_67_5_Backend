@@ -13,7 +13,7 @@ use App\Models\ingredient_orders;
 use App\Models\shops;
 use App\Models\addresses;
 use App\Models\farms;
-
+use App\Models\payments;
 use Illuminate\Support\Facades\Auth;
 
 
@@ -29,29 +29,76 @@ class SalesOfferController extends Controller
             return response()->json(['error' => 'คุณไม่มีสิทธิ์ดำเนินการนี้'], 403);
         }
 
+        // ตรวจสอบการรับค่าจากคำขอ
         $validated = $request->validate([
             'quantity' => 'required|numeric',
-            'price_per_unit' => 'required|numeric',
+            'price_per_unit' => 'sometimes|numeric', // ไม่จำเป็นต้องกรอกในทุกกรณี
+            'payment_proof' => 'required|image|mimes:jpg,png,jpeg|max:2048'  // รับหลักฐานการโอนเงิน
         ]);
 
         // ค้นหาโพสต์ขายวัตถุดิบที่ระบุ
         $salesPost = sales_post::find($salesPostId);
         if (!$salesPost) {
-            return response()->json(['error' => 'ไม่พบโพสต์ขายวัตถุดิบที่ระบุ'], 404);
+            return response()->json(['error' => 'ไม่พบโพสต์ขาย'], 404);
         }
 
+        // ตรวจสอบว่าจำนวนที่ยื่นซื้อ (quantity) ไม่เกินจำนวนที่ฟาร์มมีขาย
+        $availableQuantity = $salesPost->amount - $salesPost->sold_amount;
+        if ($validated['quantity'] > $availableQuantity) {
+            return response()->json([
+                'error' => 'จำนวนที่ยื่นซื้อมากกว่าจำนวนสินค้าที่ฟาร์มมีขายอยู่',
+                'available_quantity' => $availableQuantity
+            ], 400);
+        }
+
+        // ถ้าไม่ระบุ price_per_unit ให้ใช้ค่าจาก sales_post
+        $pricePerUnit = $validated['price_per_unit'] ?? $salesPost->price_per_unit;
+
+        // คำนวณยอดเงินทั้งหมดจากข้อเสนอ
+        $totalAmount = $validated['quantity'] * $pricePerUnit;
+
+        // สร้างข้อเสนอ
         $offer = new sales_offers();
         $offer->quantity = $validated['quantity'];
-        $offer->price_per_unit = $validated['price_per_unit'];
-        $offer->status = 'submit'; // เริ่มต้นเป็น submit
-        // เก็บข้อมูลว่า offer นี้ตอบโพสต์ขายไหน
+        $offer->price_per_unit = $pricePerUnit;
+        $offer->status = 'confirmed';  // อัปเดตสถานะให้เป็น confirmed โดยทันที
         $offer->sales_post_post_id = $salesPost->post_id;
-        // เก็บ shop_id ที่เชื่อมโยงกับผู้ใช้
         $offer->shops_shop_id = $user->shop ? $user->shop->shop_id : null;
-        // เก็บ shop_id จากฟาร์มที่ผู้ใช้เชื่อมโยง
         $offer->save();
 
-        return response()->json(['message' => 'ส่งข้อเสนอเรียบร้อยแล้ว', 'offer' => $offer]);
+        // อัปโหลดหลักฐานการโอนเงิน
+        $paymentProofPath = $request->file('payment_proof')->store('payments', 'public');
+
+        // สร้างการชำระเงิน
+        $payment = new payments();
+        $payment->amount = $totalAmount;
+        $payment->payment_proof_url = $paymentProofPath;
+        $payment->status = 'pending'; // รอการตรวจสอบจากเกษตรกร
+        $payment->paymentable_id = $offer->sales_offers_id;
+        $payment->paymentable_type = 'App\\Models\\sales_offers';
+        $payment->save();
+
+        // ดึงข้อมูลที่อยู่จากร้าน (shop) ของผู้ประกอบการ
+        $shop = $user->shop;  // ร้านของผู้ประกอบการ
+        if (!$shop || !$shop->addresses_address_id) {
+            return response()->json(['error' => 'ไม่พบที่อยู่ร้านของผู้ประกอบการ'], 404);
+        }
+
+        // สร้างคำสั่งซื้อ (Ingredient Order)
+        $ingredientOrder = new ingredient_orders();
+        $ingredientOrder->total = $totalAmount;
+        $ingredientOrder->status = 'pending';  // สถานะเป็น pending เพื่อรอการตรวจสอบจากเกษตรกร
+        $ingredientOrder->farms_farm_id = $salesPost->farm->farm_id;
+        $ingredientOrder->shops_shop_id = $offer->shops_shop_id;
+        $ingredientOrder->addresses_address_id = $shop->addresses_address_id;  // ใช้ที่อยู่ของร้าน
+        $ingredientOrder->sales_offers_sales_offers_id = $offer->sales_offers_id;
+        $ingredientOrder->save();
+
+        // อัปเดต sold_amount ใน sales_post
+        $salesPost->sold_amount += $offer->quantity;
+        $salesPost->save();
+
+        return response()->json(['message' => 'ข้อเสนอได้รับการยืนยันและชำระเงินแล้ว', 'offer' => $offer, 'ingredient_order' => $ingredientOrder]);
     }
 
     // ฟังก์ชันให้เจ้าของฟาร์มยืนยันข้อเสนอจากผู้ประกอบการ

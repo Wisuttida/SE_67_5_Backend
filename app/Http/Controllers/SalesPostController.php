@@ -65,7 +65,7 @@ class SalesPostController extends Controller
             'price_per_unit' => 'required|numeric',
             'amount' => 'required|numeric',
             'unit' => 'required|in:kg,t,mL,L',
-            'image' => 'required|image|mimes:jpg,png,jpeg|max:2048'
+            //'image' => 'required|image|mimes:jpg,png,jpeg|max:2048'
         ]);
 
         if ($validator->fails()) {
@@ -73,7 +73,7 @@ class SalesPostController extends Controller
         }
 
         // อัปโหลดรูปภาพ
-        $imagePath = $request->file('image')->store('sales_posts', 'public');
+        //$imagePath = $request->file('image')->store('sales_posts', 'public');
 
         // ตรวจสอบว่าผู้ใช้งานนี้มี farm_id และใช้ความสัมพันธ์ farm ในการบันทึกโพสต์ขาย
         $farm = $user->farm;  // การเชื่อมโยงฟาร์มกับผู้ใช้
@@ -91,7 +91,7 @@ class SalesPostController extends Controller
             'farms_farm_id' => $farm->farm_id,  // ระบุ farms_farm_id ที่ถูกต้อง
             'status' => 'active',
             'times' => now(),
-            'image_url' => $imagePath
+            //'image_url' => $imagePath
         ]);
 
         return response()->json(['message' => 'สร้างโพสต์ขายสำเร็จ', 'sales_post' => $salesPost]);
@@ -117,7 +117,7 @@ class SalesPostController extends Controller
             'price_per_unit' => 'sometimes|numeric',
             'amount' => 'sometimes|numeric',
             'unit' => 'sometimes|in:kg,t,mL,L',
-            'image' => 'sometimes|image|mimes:jpg,png,jpeg|max:2048'
+            //'image' => 'sometimes|image|mimes:jpg,png,jpeg|max:2048'
         ]);
 
         if ($validator->fails()) {
@@ -139,11 +139,11 @@ class SalesPostController extends Controller
         if ($request->has('unit')) {
             $salesPost->unit = $request->unit;
         }
-        if ($request->hasFile('image')) {
-            // สามารถลบรูปเก่าก่อนอัปโหลดใหม่ได้ (ถ้าต้องการ)
-            $imagePath = $request->file('image')->store('sales_posts', 'public');
-            $salesPost->image_url = $imagePath;
-        }
+        // if ($request->hasFile('image')) {
+        //     // สามารถลบรูปเก่าก่อนอัปโหลดใหม่ได้ (ถ้าต้องการ)
+        //     $imagePath = $request->file('image')->store('sales_posts', 'public');
+        //     $salesPost->image_url = $imagePath;
+        // }
         $salesPost->save();
 
         return response()->json(['message' => 'แก้ไขโพสต์ขายสำเร็จ', 'sales_post' => $salesPost]);
