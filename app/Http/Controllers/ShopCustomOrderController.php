@@ -11,7 +11,7 @@ class ShopCustomOrderController extends Controller
     {
         // ดึงทุกร้านค้าที่มีสถานะ accept_custom = 1
         $shops = \App\Models\Shops::where('accepts_custom', 1)
-            ->get(['shop_image', 'shop_name']);
+            ->get(['shop_id','shop_image', 'shop_name']);
 
         // ตรวจสอบว่ามีร้านค้าอยู่หรือไม่
         if ($shops->isEmpty()) {
