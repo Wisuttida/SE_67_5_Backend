@@ -7,13 +7,28 @@ use Illuminate\Http\Request;
 
 class ShopCustomOrderController extends Controller
 {
+    public function getAcceptedShops()
+    {
+        // ดึงทุกร้านค้าที่มีสถานะ accept_custom = 1
+        $shops = \App\Models\Shops::where('accepts_custom', 1)
+            ->get(['shop_image', 'shop_name']);
+
+        // ตรวจสอบว่ามีร้านค้าอยู่หรือไม่
+        if ($shops->isEmpty()) {
+            return response()->json(['message' => 'ไม่พบร้านค้าที่ยอมรับการสั่งซื้อ'], 404);
+        }
+
+        // ส่งข้อมูลร้านค้าให้กับผู้ใช้
+        return response()->json(['shops' => $shops]);
+    }
+
     public function updateOrderStatus(Request $request, $order_id)
     {
         $request->validate([
-            'action'             => 'required|in:accept,reject',
+            'action' => 'required|in:accept,reject',
             'custom_order_price' => 'required_if:action,accept|numeric|min:0',
             // ถ้า is_tester = 'yes' ต้องระบุ tester_price ด้วย
-            'tester_price'       => 'nullable|numeric|min:0',
+            'tester_price' => 'nullable|numeric|min:0',
         ]);
 
         $order = custom_orders::find($order_id);
@@ -35,7 +50,7 @@ class ShopCustomOrderController extends Controller
             if ($order->is_tester === 'no') {
                 $order->update([
                     'custom_order_price' => $request->custom_order_price,
-                    'status'             => 'pending'
+                    'status' => 'pending'
                 ]);
             } else {
                 // ถ้าเป็น tester ต้องมี tester_price ด้วย
@@ -44,8 +59,8 @@ class ShopCustomOrderController extends Controller
                 }
                 $order->update([
                     'custom_order_price' => $request->custom_order_price,
-                    'tester_price'       => $request->tester_price,
-                    'status'             => 'pending'
+                    'tester_price' => $request->tester_price,
+                    'status' => 'pending'
                 ]);
             }
         }
