@@ -16,6 +16,7 @@ class buy_post extends Model
         'description',
         'price_per_unit',
         'amount',
+        'sold_amount',
         'unit',
         'shops_shop_id',
         'ingredients_ingredient_id',

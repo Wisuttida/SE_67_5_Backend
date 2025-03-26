@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\orders;
 use App\Models\payments;
 use App\Models\custom_orders;
+use App\Models\ingredient_orders;
 use Illuminate\Support\Facades\Storage;
 
 class PaymentsController extends Controller
@@ -96,7 +97,76 @@ class PaymentsController extends Controller
 
         return response()->json(['payments' => $payments]);
     }
+    public function uploadPaymentProofForIngredientOrder(Request $request, $ingredientOrderId)
+    {
+        $request->validate([
+            'payment_proof' => 'required|image|mimes:jpg,png,jpeg|max:2048'
+        ]);
 
+        // ค้นหาคำสั่งซื้อจาก ingredient_orders
+        $ingredientOrder = ingredient_orders::find($ingredientOrderId);
+        if (!$ingredientOrder) {
+            return response()->json(['error' => 'ไม่พบคำสั่งซื้อวัตถุดิบ'], 404);
+        }
 
+        // อัปโหลดหลักฐานการชำระเงิน
+        $path = $request->file('payment_proof')->store('payments', 'public');
 
+        // สร้าง payment โดยใช้ความสัมพันธ์ polymorphic
+        $payment = $ingredientOrder->payment()->create([
+            'amount' => $ingredientOrder->total,
+            'payment_proof_url' => $path,
+            'status' => 'pending',
+        ]);
+
+        return response()->json(['message' => 'อัปโหลดหลักฐานการชำระเงินสำเร็จ', 'payment' => $payment]);
+    }
+
+    // ฟังก์ชันอัปเดตสถานะการชำระเงินสำหรับ ingredient_orders
+    public function updatePaymentStatusForIngredientOrder(Request $request, $paymentId)
+    {
+        $request->validate([
+            'status' => 'required|in:completed,failed'
+        ]);
+
+        $payment = payments::find($paymentId);
+        if (!$payment) {
+            return response()->json(['error' => 'ไม่พบรายการชำระเงิน'], 404);
+        }
+
+        // อัปเดตสถานะของ payment
+        $payment->update(['status' => $request->status]);
+
+        // หากสถานะเป็น completed ให้เปลี่ยนสถานะของ ingredient order
+        if ($request->status === 'completed' && $payment->paymentable) {
+            // เปลี่ยนสถานะของ ingredient order เป็น confirmed
+            $ingredientOrder = $payment->paymentable;
+            $ingredientOrder->status = 'confirmed';
+            $ingredientOrder->save();
+        }
+
+        return response()->json(['message' => 'อัปเดตสถานะการชำระเงินสำเร็จ', 'payment' => $payment]);
+    }
+    // ฟังก์ชันดึงรายการการชำระเงินที่เกี่ยวข้องกับฟาร์ม
+    public function listPaymentsForFarm(Request $request)
+    {
+        $user = auth()->user();
+        $farm = $user->farm; // ตรวจสอบว่าผู้ใช้มีฟาร์มหรือไม่
+
+        if (!$farm) {
+            return response()->json(['error' => 'ไม่พบฟาร์มของคุณ'], 404);
+        }
+
+        // ดึงข้อมูล payments ที่เกี่ยวข้องกับฟาร์มจาก ingredient_orders เท่านั้น
+        $payments = payments::with('paymentable')
+            ->whereHas('paymentable', function ($query) use ($farm) {
+                // ตรวจสอบว่า paymentable เป็น ingredient_orders และตรวจสอบ farm_id
+                if ($query->getModel() instanceof \App\Models\ingredient_orders) {
+                    $query->where('ingredient_orders.farms_farm_id', $farm->farm_id);
+                }
+            })
+            ->get();
+
+        return response()->json(['payments' => $payments]);
+    }
 }

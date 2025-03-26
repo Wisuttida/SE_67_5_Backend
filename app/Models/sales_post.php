@@ -16,6 +16,7 @@ class sales_post extends Model
         'description',
         'price_per_unit',
         'amount',
+        'sold_amount',
         'unit',
         'farms_farm_id',
         'ingredients_ingredient_id',

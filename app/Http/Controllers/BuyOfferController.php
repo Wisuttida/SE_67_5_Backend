@@ -53,9 +53,11 @@ class BuyOfferController extends Controller
             return response()->json(['error' => 'คุณไม่มีสิทธิ์ดำเนินการนี้'], 403);
         }
 
+        // ตรวจสอบและ validate ข้อมูลที่จำเป็น
         $validated = $request->validate([
             'quantity' => 'required|numeric',
-            'price_per_unit' => 'required|numeric',
+            // price_per_unit ไม่จำเป็นต้องถูกส่ง ถ้าไม่ส่งให้ใช้ค่าจากโพสต์รับซื้อ
+            'price_per_unit' => 'sometimes|numeric',
         ]);
 
         // ค้นหาโพสต์ขายวัตถุดิบที่ระบุ
@@ -64,9 +66,20 @@ class BuyOfferController extends Controller
             return response()->json(['error' => 'ไม่พบโพสต์ขายวัตถุดิบที่ระบุ'], 404);
         }
 
+        // ตรวจสอบว่า จำนวนข้อเสนอ (quantity) ไม่เกินจำนวนที่เหลือจาก amount - sold_amount
+        $remainingAmount = $buyPost->amount - $buyPost->sold_amount;  // คำนวณจำนวนที่ยังเหลือ
+
+        if ($validated['quantity'] > $remainingAmount) {
+            return response()->json(['error' => 'จำนวนข้อเสนอไม่สามารถเกินจำนวนที่ผู้ประกอบการต้องการได้'], 400);
+        }
+
+        // ถ้า price_per_unit ไม่ถูกส่งมา ให้ใช้ราคาจากโพสต์รับซื้อ
+        $pricePerUnit = isset($validated['price_per_unit']) ? $validated['price_per_unit'] : $buyPost->price_per_unit;
+
+        // สร้างข้อเสนอใหม่
         $offer = new buy_offers();
         $offer->quantity = $validated['quantity'];
-        $offer->price_per_unit = $validated['price_per_unit'];
+        $offer->price_per_unit = $pricePerUnit;  // ใช้ราคาจากโพสต์รับซื้อหากไม่ได้ส่งมา
         $offer->status = 'submit'; // เริ่มต้นเป็น submit
         // เก็บข้อมูลว่า offer นี้ตอบโพสต์ขายไหน
         $offer->buy_post_post_id = $buyPost->post_id;
@@ -86,6 +99,7 @@ class BuyOfferController extends Controller
         if (!$user) {
             return response()->json(['error' => 'คุณต้องล็อกอินก่อน'], 401);
         }
+
         // ตรวจสอบให้แน่ใจว่า user เป็นผู้ประกอบการ (position_id = 2)
         $role = $user->roles->firstWhere('position_position_id', 2);
         if (!$role) {
@@ -98,9 +112,11 @@ class BuyOfferController extends Controller
         if (!$offer) {
             return response()->json(['error' => 'ไม่พบข้อเสนอ'], 404);
         }
+
         if ($offer->status != 'submit') {
             return response()->json(['error' => 'ข้อเสนอไม่อยู่ในสถานะ submit'], 400);
         }
+
         // ตรวจสอบว่า offer นี้เกี่ยวข้องกับฟาร์มของเกษตรกรที่ส่ง offer หรือไม่
         if ($buyPost->shops_shop_id != $user->shop->shop_id) {
             return response()->json(['error' => 'ข้อเสนอนี้ไม่เกี่ยวข้องกับร้านค้าของคุณ'], 403);
@@ -132,10 +148,19 @@ class BuyOfferController extends Controller
         $ingredientOrder->sales_offers_sales_offers_id = null;
         $ingredientOrder->save();
 
+        // สร้างการชำระเงิน (Payment) สำหรับ Ingredient Order
+        $payment = new \App\Models\payments();
+        $payment->amount = $totalAmount;
+        $payment->paymentable_id = $ingredientOrder->ingredient_orders_id;
+        $payment->paymentable_type = \App\Models\ingredient_orders::class;
+        $payment->status = 'pending';  // สถานะการชำระเงินเป็น pending
+        $payment->save();
+
         return response()->json([
-            'message' => 'ข้อเสนอได้รับการยืนยันและสร้าง Ingredient Order แล้ว',
+            'message' => 'ข้อเสนอได้รับการยืนยันและสร้าง Ingredient Order พร้อมการชำระเงินแล้ว',
             'offer' => $offer,
             'ingredient_order' => $ingredientOrder,
+            'payment' => $payment
         ]);
     }
 
