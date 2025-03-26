@@ -52,6 +52,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
 });
 Route::get('/addresses', [AddressesController::class, 'index']);
+Route::get('/addresses/{id}', [AddressesController::class, 'matchId']);
 Route::post('/addresses', [AddressesController::class, 'store']);
 Route::put('/addresses/{id}', [AddressesController::class, 'update']);
 Route::patch('/addresses/{id}', [AddressesController::class, 'update']);
@@ -80,6 +81,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/orders/update-status/{order_id}', [OrdersController::class, 'updateOrderStatus']); // อัปเดตสถานะคำสั่งซื้อ
     Route::get('/orders/show/{id}', [OrdersController::class, 'show']); // ดูรายละเอียดคำสั่งซื้อตาม order_id
     Route::get('/orders/list', [OrdersController::class, 'listOrders']); // ดูรายการคำสั่งซื้อทั้งหมดของผู้ใช้ที่ login
+    Route::get('/orders/userPending', [OrdersController::class, 'ordersPending']); // ดูรายการคำสั่งซื้อทั้งหมดของผู้ใช้ที่ login
     Route::get('/orders/seller', [OrdersController::class, 'sellerOrders']); // ดูรายการคำสั่งซื้อทั้งหมดของผู้ใช้ที่ login ที่เป็น Seller
     Route::get('/orders/status/{status}', [OrdersController::class, 'getOrdersByStatus']); //ดูรายการคำสั่งซื้อตามสถานะ
     // ------------------ Payments (การชำระเงิน) ------------------

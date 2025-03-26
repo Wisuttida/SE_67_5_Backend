@@ -239,6 +239,15 @@ class OrdersController extends Controller
 
         return response()->json($orders);
     }
+    public function ordersPending()
+    {
+        $user = auth()->user();
+        $orders = orders::with(['orderItems.product.shop']) // ดึงข้อมูลร้านค้าด้วย
+            ->where('users_user_id', $user->user_id)->where('status', 'pending')
+            ->get();
+
+        return response()->json($orders);
+    }
 
     public function show($id)
     {

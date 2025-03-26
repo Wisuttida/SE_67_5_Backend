@@ -22,6 +22,15 @@ class AddressesController extends Controller
             'data' => $addresses
         ], 200);
     }
+    public function matchId($id)
+    {
+        $addresses = addresses::where('address_id', $id)->get();
+
+        return response()->json([
+            'status' => 'success',
+            'data' => $addresses
+        ], 200);
+    }
     public function store(Request $request)
     {
         $validated = $request->validate([
