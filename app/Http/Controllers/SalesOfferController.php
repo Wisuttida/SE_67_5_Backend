@@ -53,47 +53,45 @@ class SalesOfferController extends Controller
     public function confirmOffer($offerId)
     {
         $user = Auth::user();
-        // ตรวจสอบให้แน่ใจว่า user เป็นเกษตรกร (position_id = 3)
-        if ($user->role->position_position_id != 3) {
+        if (!$user) {
+            return response()->json(['error' => 'คุณต้องล็อกอินก่อน'], 401);
+        }
+        // ใช้ firstWhere เพื่อดึง role ที่ตรงกับ position_position_id = 3
+        $role = $user->roles->firstWhere('position_position_id', 3);
+        if (!$role) {
             return response()->json(['error' => 'คุณไม่มีสิทธิ์ยืนยันข้อเสนอ'], 403);
         }
 
-        $offer = \App\Models\SalesOffer::find($offerId);
+        $offer = sales_offers::find($offerId);
+        $salesPost = sales_post::find($offer->sales_post_post_id);
         if (!$offer) {
             return response()->json(['error' => 'ไม่พบข้อเสนอ'], 404);
         }
         if ($offer->status != 'submit') {
             return response()->json(['error' => 'ข้อเสนอไม่อยู่ในสถานะ submit'], 400);
         }
-        // ตรวจสอบว่า offer นี้เกี่ยวข้องกับฟาร์มของเกษตรกรที่ล็อกอินอยู่
-        if ($offer->farms_farm_id != $user->farm->farm_id) {
+        if ($salesPost->farms_farm_id != $user->farm->farm_id) {
             return response()->json(['error' => 'ข้อเสนอนี้ไม่เกี่ยวข้องกับฟาร์มของคุณ'], 403);
         }
-
         $offer->status = 'confirmed';
         $offer->save();
-
-        // คำนวณยอดรวม (total)
         $totalAmount = $offer->quantity * $offer->price_per_unit;
-
-        // ดึงข้อมูลผู้ซื้อ (ผู้ประกอบการ) จาก offer
-        $buyer = \App\Models\User::find($offer->users_user_id);
-        if (!$buyer) {
-            return response()->json(['error' => 'ไม่พบข้อมูลผู้ซื้อ'], 404);
+        $buyerShop = \App\Models\Shops::find($offer->shops_shop_id);
+        if (!$buyerShop) {
+            return response()->json(['error' => 'ไม่พบข้อมูลร้านของผู้ซื้อ'], 404);
         }
-        $defaultAddress = $buyer->addresses()->where('is_default', 1)->first();
+
+        $defaultAddress = $buyerShop->address;
         if (!$defaultAddress) {
-            return response()->json(['error' => 'ผู้ซื้อไม่มีที่อยู่หลัก'], 400);
+            return response()->json(['error' => 'ร้านของผู้ซื้อไม่มีที่อยู่หลัก'], 400);
         }
 
-        // สร้าง Ingredient Order ใหม่
-        $ingredientOrder = new \App\Models\IngredientOrder();
+        $ingredientOrder = new ingredient_orders();
         $ingredientOrder->total = $totalAmount;
         $ingredientOrder->status = 'pending';
-        $ingredientOrder->farms_farm_id = $user->farm->farm_id;  // ผู้ขาย: ฟาร์มของเกษตรกรที่ยืนยัน
-        $ingredientOrder->shops_shop_id = $buyer->shop->shop_id;     // ผู้ซื้อ: ร้านของผู้ประกอบการ
+        $ingredientOrder->farms_farm_id = $user->farm->farm_id;
+        $ingredientOrder->shops_shop_id = $buyer->shop->shop_id;
         $ingredientOrder->addresses_address_id = $defaultAddress->address_id;
-        // ระบุความสัมพันธ์กับ sales offer (ในกรณีนี้ buy offer จะเป็น null)
         $ingredientOrder->sales_offers_sales_offers_id = $offer->sales_offers_id;
         $ingredientOrder->buy_offers_buy_offers_id = null;
         $ingredientOrder->save();

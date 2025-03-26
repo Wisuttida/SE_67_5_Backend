@@ -63,7 +63,8 @@ class BuyOfferController extends Controller
         }
 
         // ค้นหาข้อเสนอในตาราง buy_offers
-        $offer = \App\Models\buy_offers::where('buy_offers_id', $offerId)->first();
+        $offer = buy_offers::where('buy_offers_id', $offerId)->first();
+        $buyPost = buy_post::find($offer->buy_post_post_id);
         if (!$offer) {
             return response()->json(['error' => 'ไม่พบข้อเสนอ'], 404);
         }
@@ -71,8 +72,8 @@ class BuyOfferController extends Controller
             return response()->json(['error' => 'ข้อเสนอไม่อยู่ในสถานะ submit'], 400);
         }
         // ตรวจสอบว่า offer นี้เกี่ยวข้องกับฟาร์มของเกษตรกรที่ส่ง offer หรือไม่
-        if ($offer->farms_farm_id != $user->farm->farm_id) {
-            return response()->json(['error' => 'ข้อเสนอนี้ไม่เกี่ยวข้องกับฟาร์มของคุณ'], 403);
+        if ($buyPost->shops_shop_id != $user->shop->shop_id) {
+            return response()->json(['error' => 'ข้อเสนอนี้ไม่เกี่ยวข้องกับร้านค้าของคุณ'], 403);
         }
 
         // เปลี่ยนสถานะเป็น confirmed
