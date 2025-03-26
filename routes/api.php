@@ -130,6 +130,12 @@ Route::get('/tambons', [TambonController::class, 'getTambons']);
 Route::get('/zipcodes', [TambonController::class, 'getZipcodes']);
 
 Route::middleware('auth:sanctum')->group(function () {
+    // Route สำหรับเรียกดูโพสต์รับซื้อทั้งหมด
+    Route::get('/show-buyposts', [BuyPostController::class, 'showBuyPosts']);
+
+    // Route สำหรับเรียกดูโพสต์ขายทั้งหมด
+    Route::get('/show-salesposts', [SalesPostController::class, 'showSalesPosts']);
+
     // Routes สำหรับ BuyPostController (ผู้ประกอบการโพสต์รับซื้อวัตถุดิบ)
     Route::get('/buy-posts', [BuyPostController::class, 'index']);
     Route::post('/buy-posts', [BuyPostController::class, 'store']);

@@ -38,7 +38,7 @@ class SalesOfferController extends Controller
         $offer = new sales_offers();
         $offer->quantity = $validated['quantity'];
         $offer->price_per_unit = $validated['price_per_unit'];
-        $offer->status = 'pending'; // เริ่มต้นเป็น pending
+        $offer->status = 'submit'; // เริ่มต้นเป็น submit
         // เก็บข้อมูลว่า offer นี้ตอบโพสต์ขายไหน
         $offer->sales_post_post_id = $salesPost->post_id;
         // เก็บ shop_id ที่เชื่อมโยงกับผู้ใช้
@@ -52,16 +52,16 @@ class SalesOfferController extends Controller
     public function confirmOffer($offerId)
     {
         $user = Auth::user();
-        if ($user->role->position_position_id != 2) {
+        if ($user->role->position_position_id != 3) {
             return response()->json(['error' => 'คุณไม่มีสิทธิ์ยืนยันข้อเสนอ'], 403);
         }
 
-        $offer = buy_offers::find($offerId);
+        $offer = sales_offers::find($offerId);
         if (!$offer) {
             return response()->json(['error' => 'ไม่พบข้อเสนอ'], 404);
         }
-        if ($offer->status != 'pending') {
-            return response()->json(['error' => 'ข้อเสนอไม่อยู่ในสถานะ pending'], 400);
+        if ($offer->status != 'submit') {
+            return response()->json(['error' => 'ข้อเสนอไม่อยู่ในสถานะ submit'], 400);
         }
 
         // ตรวจสอบว่า offer นี้เกี่ยวข้องกับฟาร์มของเจ้าของฟาร์มที่ล็อกอินอยู่
@@ -98,16 +98,16 @@ class SalesOfferController extends Controller
     public function rejectOffer($offerId)
     {
         $user = Auth::user();
-        if ($user->role->position_position_id != 2) {
+        if ($user->role->position_position_id != 3) {
             return response()->json(['error' => 'คุณไม่มีสิทธิ์ปฏิเสธข้อเสนอ'], 403);
         }
 
-        $offer = buy_offers::find($offerId);
+        $offer = sales_offers::find($offerId);
         if (!$offer) {
             return response()->json(['error' => 'ไม่พบข้อเสนอ'], 404);
         }
-        if ($offer->status != 'pending') {
-            return response()->json(['error' => 'ข้อเสนอไม่อยู่ในสถานะ pending'], 400);
+        if ($offer->status != 'submit') {
+            return response()->json(['error' => 'ข้อเสนอไม่อยู่ในสถานะ submit'], 400);
         }
 
         if ($offer->farms_farm_id != $user->farm->farm_id) {

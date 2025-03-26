@@ -15,6 +15,29 @@ class SalesPostController extends Controller
         $salesPosts = sales_post::all();
         return response()->json(['sales_posts' => $salesPosts]);
     }
+    // Controller function to show all Sales Posts
+    public function showSalesPosts()
+    {
+        $salesPosts = sales_post::with('farm', 'ingredients')
+            ->where('status', 'active')
+            ->get();
+
+        $salesPostsData = $salesPosts->map(function ($salesPost) {
+            return [
+                'farm_image' => $salesPost->farm ? $salesPost->farm->farm_image : null,  // รูปภาพฟาร์ม
+                'farm_name' => $salesPost->farm ? $salesPost->farm->farm_name : 'ไม่มีชื่อฟาร์ม', // ชื่อฟาร์ม
+                'description' => $salesPost->description, // รายละเอียดโพสต์
+                'price_per_unit' => $salesPost->price_per_unit, // ราคาต่อหน่วย
+                'amount' => $salesPost->amount, // จำนวน
+                'unit' => $salesPost->unit, // หน่วย
+                'ingredient_name' => $salesPost->ingredients ? $salesPost->ingredients->name : 'ไม่มีข้อมูลวัตถุดิบ', // ชื่อวัตถุดิบ
+                'status' => $salesPost->status, // สถานะ
+                'sold_amount' => $salesPost->sold_amount, // จำนวนที่ขายไปแล้ว
+            ];
+        });
+
+        return response()->json(['sales_posts' => $salesPostsData]);
+    }
 
     // 2.2 แสดงรายละเอียดโพสต์ขายแต่ละรายการ
     public function show($id)

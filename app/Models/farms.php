@@ -13,7 +13,6 @@ class farms extends Model
     public $incrementing = true;
     protected $keyType = 'int';
     public $timestamps = false;
-
     // ถ้าต้องการ fillable ก็เพิ่มได้
     protected $fillable = [
         'farm_name',
@@ -29,6 +28,10 @@ class farms extends Model
     public function user()
     {
         return $this->belongsTo(User::class, 'users_user_id'); // ตรวจสอบให้ใช้ 'users_user_id' ไม่ใช่ 'user_user_id'
+    }
+    public function salesPosts()
+    {
+        return $this->hasMany(sales_post::class, 'farms_farm_id', 'farm_id');
     }
 
 }

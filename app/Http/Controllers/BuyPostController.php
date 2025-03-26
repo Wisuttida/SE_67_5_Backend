@@ -17,6 +17,31 @@ class BuyPostController extends Controller
         return response()->json(['buy_posts' => $buyPosts]);
     }
 
+    // Controller function to show all Buy Posts
+    public function showBuyPosts()
+    {
+        $buyPosts = buy_post::with('shop', 'ingredients') // ใช้กับคำสั่ง Eloquent เพื่อดึงข้อมูลที่เกี่ยวข้อง
+            ->where('status', 'active')
+            ->get();
+
+        $buyPostsData = $buyPosts->map(function ($buyPost) {
+            return [
+                'shop_image' => $buyPost->shop ? $buyPost->shop->shop_image : null,  // รูปภาพร้าน
+                'shop_name' => $buyPost->shop ? $buyPost->shop->shop_name : 'ไม่มีชื่อร้าน', // ชื่อร้าน
+                'description' => $buyPost->description, // รายละเอียดโพสต์
+                'price_per_unit' => $buyPost->price_per_unit, // ราคาต่อหน่วย
+                'amount' => $buyPost->amount, // จำนวน
+                'unit' => $buyPost->unit, // หน่วย
+                'ingredient_name' => $buyPost->ingredients ? $buyPost->ingredients->name : 'ไม่มีข้อมูลวัตถุดิบ', // ชื่อวัตถุดิบ
+                'status' => $buyPost->status, // สถานะ
+                'sold_amount' => $buyPost->sold_amount, // จำนวนที่ขายไปแล้ว
+            ];
+        });
+
+        return response()->json(['buy_posts' => $buyPostsData]);
+    }
+
+
     // 1.2 แสดงรายละเอียดของโพสต์รับซื้อแต่ละรายการ
     public function show($id)
     {

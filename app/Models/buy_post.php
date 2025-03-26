@@ -25,12 +25,19 @@ class buy_post extends Model
     // สมมุติว่าร้านมีความสัมพันธ์กับโพสต์รับซื้อ
     public function shop()
     {
-        return $this->belongsTo(Shops::class, 'shops_shop_id');
+        return $this->belongsTo(Shops::class, 'shops_shop_id', 'shop_id');
     }
-
     // กำหนดความสัมพันธ์แบบ polymorphic กับ payments
     public function payment()
     {
         return $this->morphOne(payments::class, 'paymentable');
     }
+
+    // เพิ่มฟังก์ชันในโมเดล buy_post
+    public function ingredients()
+    {
+        return $this->belongsTo(Ingredients::class, 'ingredients_ingredient_id', 'ingredient_id');
+    }
+
+
 }

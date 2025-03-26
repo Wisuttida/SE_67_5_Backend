@@ -22,12 +22,20 @@ class sales_post extends Model
         'status',
     ];
 
-    // ความสัมพันธ์กับเกษตรกร (farms)
+    // ความสัมพันธ์กับฟาร์ม
     public function farm()
     {
-        return $this->belongsTo(Farms::class, 'farms_farm_id');
+        return $this->belongsTo(Farms::class, 'farms_farm_id', 'farm_id');
     }
 
+    // ความสัมพันธ์กับวัตถุดิบ
+    public function ingredients()
+    {
+        return $this->belongsTo(Ingredients::class, 'ingredients_ingredient_id', 'ingredient_id');
+    }
+
+
+    // ความสัมพันธ์ polymorphic กับ payments
     public function payment()
     {
         return $this->morphOne(payments::class, 'paymentable');
