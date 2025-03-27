@@ -156,7 +156,6 @@ class SalesPostController extends Controller
         if (!$salesPost) {
             return response()->json(['error' => 'ไม่พบโพสต์ขาย'], 404);
         }
-
         $salesPost->delete();
         return response()->json(['message' => 'ลบโพสต์ขายสำเร็จ']);
     }

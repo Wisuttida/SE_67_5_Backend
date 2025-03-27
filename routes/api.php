@@ -187,12 +187,14 @@ Route::middleware('auth:sanctum')->group(function () {
     // Route สำหรับแสดงสถานะคำสั่งซื้อของฟาร์ม
     Route::get('/ingredient-orders/farm', [IngredientOrdersController::class, 'showOrderStatusForFarm']);
     // Route สำหรับแสดงคำสั่งซื้อที่กรองตามสถานะของร้าน
-    Route::get('/ingredient-orders/shop', [IngredientOrdersController::class, 'showOrdersByStatusForShop']);
+    Route::get('/ingredient-orders/shops', [IngredientOrdersController::class, 'showOrdersByStatusForShop']);
     // Route สำหรับแสดงคำสั่งซื้อที่กรองตามสถานะของฟาร์ม
-    Route::get('/ingredient-orders/farm', [IngredientOrdersController::class, 'showOrdersByStatusForFarm']);
+    Route::get('/ingredient-orders/farms', [IngredientOrdersController::class, 'showOrdersByStatusForFarm']);
     // Route สำหรับแสดงรายละเอียดคำสั่งซื้อ
     Route::get('/ingredient-orders/{orderId}', [IngredientOrdersController::class, 'showOrderDetails']);
 
     // Route สำหรับแก้ไขสถานะคำสั่งซื้อของฟาร์ม
     Route::put('/ingredient-orders/{orderId}/update-status', [IngredientOrdersController::class, 'updateOrderStatusForFarm']);
+    Route::put('/ingredient-orders/{orderId}/update-to-shipped', [IngredientOrdersController::class, 'updateOrderStatusToShipped']);
+
 });

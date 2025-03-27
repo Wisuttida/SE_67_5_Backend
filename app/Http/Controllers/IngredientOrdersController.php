@@ -90,18 +90,41 @@ class IngredientOrdersController extends Controller
             return response()->json(['error' => 'ไม่พบฟาร์มของคุณ'], 404);
         }
 
-        // ตรวจสอบว่ามีการส่งสถานะมาหรือไม่
+        // ตรวจสอบค่าของ status ที่ส่งมา
         $status = $request->query('status'); // รับค่าจาก query parameter 'status'
 
-        // กรองคำสั่งซื้อจากสถานะที่ระบุ
+        // ตรวจสอบว่ามีการส่งสถานะมาหรือไม่ และสถานะตรงกับค่าที่ถูกต้อง
+        if ($status && !in_array($status, ['pending', 'confirmed', 'delivered', 'shipped'])) {
+            return response()->json(['error' => 'สถานะที่ระบุไม่ถูกต้อง'], 400);
+        }
+
+        // กรองคำสั่งซื้อจากสถานะที่ระบุและโหลดข้อมูลที่เกี่ยวข้อง (sales_offer, buy_offer, ingredients)
         $orders = ingredient_orders::where('farms_farm_id', $farm->farm_id)
             ->when($status, function ($query) use ($status) {
                 return $query->where('status', $status);
             })
+            ->with([
+                'salesOffer' => function ($query) {
+                    $query->with('salePost.ingredients'); // โหลดข้อมูลของ ingredients ที่เกี่ยวข้องกับ sales_post
+                },
+                'buyOffer' => function ($query) {
+                    $query->with('buyPost.ingredients'); // โหลดข้อมูลของ ingredients ที่เกี่ยวข้องกับ buy_post
+                }
+            ])
             ->get();
+
+        // ตรวจสอบผลลัพธ์
+        if ($orders->isEmpty()) {
+            return response()->json([
+                'error' => 'ไม่พบคำสั่งซื้อที่ตรงกับสถานะที่เลือก',
+                'farm_id' => $farm->farm_id // แสดง farm_id ทุกกรณีที่ไม่พบคำสั่งซื้อ
+            ], 404);
+        }
 
         return response()->json(['orders' => $orders]);
     }
+
+
 
     // แก้ไขสถานะคำสั่งซื้อสำหรับฟาร์ม
     public function updateOrderStatusForFarm(Request $request, $orderId)
@@ -134,4 +157,37 @@ class IngredientOrdersController extends Controller
 
         return response()->json(['message' => 'อัปเดตสถานะคำสั่งซื้อสำเร็จ', 'order' => $order]);
     }
+
+    public function updateOrderStatusToShipped($orderId)
+    {
+        $user = Auth::user();
+        $farm = $user->farm; // ค้นหาฟาร์มของผู้ใช้
+
+        if (!$farm) {
+            return response()->json(['error' => 'ไม่พบฟาร์มของคุณ'], 404);
+        }
+
+        // ค้นหาคำสั่งซื้อ
+        $order = ingredient_orders::find($orderId);
+        if (!$order) {
+            return response()->json(['error' => 'ไม่พบคำสั่งซื้อ'], 404);
+        }
+
+        // ตรวจสอบว่า คำสั่งซื้อนี้เป็นของฟาร์มนี้
+        if ($order->farms_farm_id != $farm->farm_id) {
+            return response()->json(['error' => 'คุณไม่สามารถแก้ไขคำสั่งซื้อนี้ได้'], 403);
+        }
+
+        // ตรวจสอบสถานะของคำสั่งซื้อว่ามีสถานะเป็น 'confirmed' หรือไม่
+        if ($order->status !== 'confirmed') {
+            return response()->json(['error' => 'คำสั่งซื้อนี้ไม่สามารถอัปเดตเป็น "shipped" ได้ เนื่องจากสถานะไม่ใช่ "confirmed"'], 400);
+        }
+
+        // อัปเดตสถานะเป็น "shipped"
+        $order->status = 'shipped';
+        $order->save();
+
+        return response()->json(['message' => 'อัปเดตสถานะคำสั่งซื้อเป็น "shipped" สำเร็จ', 'order' => $order]);
+    }
+
 }
