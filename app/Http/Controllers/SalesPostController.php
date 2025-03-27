@@ -109,10 +109,6 @@ class SalesPostController extends Controller
         if (!$salesPost) {
             return response()->json(['error' => 'ไม่พบโพสต์ขาย'], 404);
         }
-        // ตรวจสอบว่าโพสต์นี้เป็นของเกษตรกรที่ล็อกอินอยู่หรือไม่
-        if ($salesPost->farm_id != $user->farm->farm_id) {
-            return response()->json(['error' => 'คุณไม่มีสิทธิ์แก้ไขโพสต์นี้'], 403);
-        }
 
         $validator = Validator::make($request->all(), [
             'ingredients_id' => 'sometimes|exists:ingredients,ingredient_id',
@@ -160,9 +156,7 @@ class SalesPostController extends Controller
         if (!$salesPost) {
             return response()->json(['error' => 'ไม่พบโพสต์ขาย'], 404);
         }
-        if ($salesPost->farm_id != $user->farm->farm_id) {
-            return response()->json(['error' => 'คุณไม่มีสิทธิ์ลบโพสต์นี้'], 403);
-        }
+
         $salesPost->delete();
         return response()->json(['message' => 'ลบโพสต์ขายสำเร็จ']);
     }

@@ -22,6 +22,7 @@ use App\Http\Controllers\BuyOfferController;
 use App\Http\Controllers\FarmsController;
 use App\Http\Controllers\ShopsController;
 use App\Http\Controllers\IngredientOrdersController;
+use App\Http\Controllers\IngredientController;
 
 
 
@@ -174,6 +175,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/orders/{order_id}/upload-payment-proof', [PaymentsController::class, 'uploadPaymentProof']);
     Route::post('/payments/{payment_id}/update-status', [PaymentsController::class, 'updatePaymentStatus']);
     Route::get('/shop/payments', [PaymentsController::class, 'listPaymentsForShop']);
+    Route::get('/ingredients', [IngredientController::class, 'index']);
+
 
     //การตรวจสอบหลักฐานการชำระเงินของ farm
     Route::get('/payments/farm', [PaymentsController::class, 'listPaymentsForFarm']);

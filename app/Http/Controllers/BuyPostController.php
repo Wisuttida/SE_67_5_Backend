@@ -12,8 +12,11 @@ class BuyPostController extends Controller
     // 1.1 แสดงรายการโพสต์รับซื้อทั้งหมด
     public function index()
     {
-        // ดึงข้อมูลโพสต์รับซื้อทั้งหมด อาจเพิ่ม pagination ในภายหลัง
-        $buyPosts = buy_post::all();
+        $user = Auth::user();
+        $buyPosts = buy_post::where('shops_shop_id', $user->shop->shop_id) // เฉพาะโพสต์จากร้านที่ผู้ใช้เป็นเจ้าของ
+            ->where('status', 'active') // สถานะต้องเป็น active
+            ->get();
+
         return response()->json(['buy_posts' => $buyPosts]);
     }
 
@@ -144,13 +147,20 @@ class BuyPostController extends Controller
     {
         $user = Auth::user();
         $buyPost = buy_post::find($id);
+
         if (!$buyPost) {
             return response()->json(['error' => 'ไม่พบโพสต์รับซื้อ'], 404);
         }
+
+        // ตรวจสอบว่าโพสต์นี้เป็นของผู้ประกอบการที่ล็อกอินอยู่หรือไม่
         if ($buyPost->shops_shop_id != $user->shop->shop_id) {
-            return response()->json(['error' => 'คุณไม่มีสิทธิ์ลบโพสต์นี้'], 403);
+            return response()->json(['error' => 'คุณไม่มีสิทธิ์แก้ไขโพสต์นี้'], 403);
         }
-        $buyPost->delete();
-        return response()->json(['message' => 'ลบโพสต์รับซื้อสำเร็จ']);
+
+        // เปลี่ยนสถานะเป็น complete แทนการลบโพสต์
+        $buyPost->status = 'complete';
+        $buyPost->save();
+
+        return response()->json(['message' => 'โพสต์รับซื้อถูกเปลี่ยนสถานะเป็น complete สำเร็จ']);
     }
 }
