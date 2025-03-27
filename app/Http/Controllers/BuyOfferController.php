@@ -9,7 +9,7 @@ use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\Request;
-
+use Illuminate\Support\Facades\Log;
 
 class BuyOfferController extends Controller
 {
@@ -46,6 +46,7 @@ class BuyOfferController extends Controller
     // ฟังก์ชันให้เกษตรกรส่งข้อเสนอ (offer) ตอบโพสต์รับซื้อวัตถุดิบ
     public function storeOffer(Request $request, $buyPostId)
     {
+        Log::info('Received Request:', $request->all()); // Log ข้อมูลที่ส่งมาจาก frontend
         // ตรวจสอบว่า user เป็นผู้ประกอบการ (position_id = 2)
         $user = Auth::user();
         $role = $user->roles->firstWhere('position_position_id', 2);  // ใช้ 2 แทน 1 หากเป็นผู้ประกอบการ
@@ -86,9 +87,14 @@ class BuyOfferController extends Controller
 
         // เก็บ farm_id ที่เชื่อมโยงกับผู้ใช้
         $offer->farms_farm_id = $user->farm ? $user->farm->farm_id : null;  // เก็บ farm_id จากฟาร์มที่ผู้ใช้เชื่อมโยง
-        $offer->save();
 
-        return response()->json(['message' => 'ส่งข้อเสนอเรียบร้อยแล้ว', 'offer' => $offer]);
+        if ($offer->save()) {
+            Log::info('Offer saved successfully:', $offer->toArray()); // Log ข้อมูลที่บันทึกแล้ว
+            return response()->json(['message' => 'ส่งข้อเสนอเรียบร้อยแล้ว', 'offer' => $offer]);
+        } else {
+            Log::error('Failed to save offer');
+            return response()->json(['error' => 'ไม่สามารถบันทึกข้อเสนอได้'], 500);
+        }
     }
 
 
