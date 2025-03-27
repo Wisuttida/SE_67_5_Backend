@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\buy_post;
+use App\Models\farms;
 
 class buy_offers extends Model
 {
@@ -20,4 +22,9 @@ class buy_offers extends Model
     {
         return $this->belongsTo(buy_post::class, 'buy_post_post_id', 'post_id');
     }
+    public function farm()
+    {
+        return $this->belongsTo(Farms::class, 'farms_farm_id', 'farm_id');
+    }
+
 }

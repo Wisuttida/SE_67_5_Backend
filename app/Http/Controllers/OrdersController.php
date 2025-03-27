@@ -311,7 +311,7 @@ class OrdersController extends Controller
                 'orderItems.product', // ดึงข้อมูลสินค้าภายในคำสั่งซื้อ
                 'addresses',           // ดึงข้อมูลที่อยู่
                 'user',                // ดึงข้อมูลผู้ใช้ (users_user_id)
-                'shop'                 // ดึงข้อมูลร้าน
+                // 'shop'                 // ดึงข้อมูลร้าน
             ])
             ->get();
 

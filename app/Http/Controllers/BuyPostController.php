@@ -13,12 +13,22 @@ class BuyPostController extends Controller
     public function index()
     {
         $user = Auth::user();
+
+        // ดึงข้อมูล buy_post และเชื่อมโยงกับ ingredient
         $buyPosts = buy_post::where('shops_shop_id', $user->shop->shop_id) // เฉพาะโพสต์จากร้านที่ผู้ใช้เป็นเจ้าของ
             ->where('status', 'active') // สถานะต้องเป็น active
+            ->with('ingredients') // ใช้ with เพื่อดึงข้อมูลที่เกี่ยวข้องกับ ingredient
             ->get();
 
-        return response()->json(['buy_posts' => $buyPosts]);
+        // ใช้ map เพื่อเพิ่มชื่อ ingredient เข้าไปในข้อมูล buy_post
+        $buyPostsWithIngredientName = $buyPosts->map(function ($post) {
+            $post->ingredient_name = $post->ingredients ? $post->ingredients->name : 'ไม่พบวัตถุดิบ'; // เพิ่มชื่อ ingredient
+            return $post;
+        });
+
+        return response()->json(['buy_posts' => $buyPostsWithIngredientName]);
     }
+
 
     // Controller function to show all Buy Posts
     public function showBuyPosts()
