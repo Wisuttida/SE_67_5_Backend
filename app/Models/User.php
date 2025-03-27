@@ -16,33 +16,6 @@ class User extends Authenticatable
     public $incrementing = true;
     protected $keyType = 'int';
 
-    public function roles()
-    {
-        return $this->hasMany(roles::class, 'users_user_id', 'user_id');
-    }
-    public function hasRole($roleName)
-    {
-        // สมมติว่า roles แต่ละอันมีความสัมพันธ์กับตำแหน่ง (position) ที่สามารถเข้าถึงชื่อ role ได้
-        return $this->roles->contains(function ($role) use ($roleName) {
-            return $role->position->position_name === $roleName;
-        });
-    }
-
-    // กำหนดความสัมพันธ์แบบ many-to-many กับตำแหน่งผ่านตาราง roles
-    public function positions()
-    {
-        return $this->belongsToMany(
-            position::class,
-            'roles', // pivot table
-            'users_user_id', // FK ใน roles สำหรับผู้ใช้
-            'position_position_id' // FK ใน roles สำหรับตำแหน่ง
-        );
-    }
-
-    public function shop()
-    {
-        return $this->hasOne(shops::class, 'users_user_id', 'user_id');
-    }
     /**
      * The attributes that are mass assignable.
      *
@@ -95,6 +68,34 @@ class User extends Authenticatable
     public function getAuthPassword()
     {
         return $this->password;
+    }
+
+    public function roles()
+    {
+        return $this->hasMany(roles::class, 'users_user_id', 'user_id');
+    }
+    public function hasRole($roleName)
+    {
+        // สมมติว่า roles แต่ละอันมีความสัมพันธ์กับตำแหน่ง (position) ที่สามารถเข้าถึงชื่อ role ได้
+        return $this->roles->contains(function ($role) use ($roleName) {
+            return $role->position->position_name === $roleName;
+        });
+    }
+
+    // กำหนดความสัมพันธ์แบบ many-to-many กับตำแหน่งผ่านตาราง roles
+    public function positions()
+    {
+        return $this->belongsToMany(
+            position::class,
+            'roles', // pivot table
+            'users_user_id', // FK ใน roles สำหรับผู้ใช้
+            'position_position_id' // FK ใน roles สำหรับตำแหน่ง
+        );
+    }
+
+    public function shop()
+    {
+        return $this->hasOne(shops::class, 'users_user_id', 'user_id');
     }
 
     public function addresses()

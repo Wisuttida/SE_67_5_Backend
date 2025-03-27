@@ -59,10 +59,15 @@ Route::patch('/addresses/{id}', [AddressesController::class, 'update']);
 Route::delete('/addresses/{id}', [AddressesController::class, 'destroy']);
 Route::middleware('auth:sanctum')->group(function () {
     // จัดการข้อมูลผู้ใช้ (เฉพาะผู้ดูแลระบบสามารถเข้าถึงได้)
-    Route::apiResource('users', UsersController::class);
+    Route::get('/users', [UsersController::class, 'index']); // GET users
+    Route::post('/users', [UsersController::class, 'store']); // POST user
+    Route::post('/users/add', [UsersController::class, 'add']); // POST user
+    Route::get('/user/get/{id}', [UsersController::class, 'show']); // GET user by ID
+    Route::put('/users/{id}', [UsersController::class, 'update']); // PUT user by ID
+    Route::put('/users/{id}/updateActivation', [UsersController::class, 'updateActivation']);
+    Route::delete('/users/{id}', [UsersController::class, 'destroy']); // DELETE user by ID
     Route::apiResource('/addresses', AddressesController::class);
     Route::put('/user/updateProfile', [UsersController::class, 'updateProfile']);
-    Route::get('/user/get/{id}', [UsersController::class, 'show']);
     Route::put('/farm/update', [FarmsController::class, 'updateFarm']);
     Route::put('/shop/updateProfile', [ShopsController::class, 'updateProfile']);
     Route::put('/shop/updateBank', [ShopsController::class, 'updateBank']);

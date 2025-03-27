@@ -101,7 +101,7 @@ class SalesOfferController extends Controller
         return response()->json(['message' => 'ข้อเสนอได้รับการยืนยันและชำระเงินแล้ว', 'offer' => $offer, 'ingredient_order' => $ingredientOrder]);
     }
 
-    // ฟังก์ชันให้เจ้าของฟาร์มยืนยันข้อเสนอจากผู้ประกอบการ
+    // ฟังก์ชันให้เจ้าของฟาร์มยืนยันข้อเสนอจากผู้ประกอบการ ไม่ต้องใช้ เพราะว่าไม่ต้อง confirmed offers
     public function confirmOffer($offerId)
     {
         $user = Auth::user();
