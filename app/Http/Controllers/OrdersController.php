@@ -305,13 +305,18 @@ class OrdersController extends Controller
             return response()->json(['error' => 'ไม่พบร้านของคุณ'], 404);
         }
 
+        // ดึงคำสั่งซื้อที่เกี่ยวข้องกับร้านค้า พร้อมข้อมูลจากตารางที่เกี่ยวข้อง
         $orders = orders::where('shops_shop_id', $shop->shop_id)
-            ->with('orderItems.product')
+            ->with([
+                'orderItems.product', // ดึงข้อมูลสินค้าภายในคำสั่งซื้อ
+                'addresses',           // ดึงข้อมูลที่อยู่
+                'user',                // ดึงข้อมูลผู้ใช้ (users_user_id)
+                'shop'                 // ดึงข้อมูลร้าน
+            ])
             ->get();
 
         return response()->json($orders);
     }
-
     public function getOrdersByStatus($status)
     {
         $user = auth()->user();

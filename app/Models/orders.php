@@ -29,4 +29,21 @@ class orders extends Model
     {
         return $this->morphOne(payments::class, 'paymentable');
     }
+
+    public function addresses()
+    {
+        return $this->belongsTo(addresses::class, 'addresses_address_id');
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(users::class, 'users_user_id', 'user_id');
+    }
+
+
+    public function shop()
+    {
+        return $this->belongsTo(shops::class, 'shops_shop_id');
+    }
+
 }
