@@ -152,9 +152,9 @@ class ProductsController extends Controller
             'price' => 'required|numeric',
             'volume' => 'required|integer',
             'stock_quantity' => 'required|integer',
-            'image_url' => 'nullable|url',
+            'image_url' => 'nullable|string',
             'gender_target' => 'required|in:Male,Female,Unisex',
-            'fragrance_strength' => 'required|in:Extrait de Parfum,Eau de Parfum (EDP),Eau de Toilette (EDT), Eau de Cologne (EDC),Mist',
+            'fragrance_strength' => 'required|in:Extrait de Parfum,Eau de Parfum (EDP),Eau de Toilette (EDT),Eau de Cologne (EDC),Mist',
             'status' => 'required|in:active,inactive,sold',
             // หากมีการเลือก fragrance tones
             'fragrance_tone_ids' => 'nullable|array',
