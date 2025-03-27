@@ -14,6 +14,64 @@ use Illuminate\Support\Facades\Log;
 class BuyOfferController extends Controller
 {
 
+    public function showOffersByUserPosts()
+    {
+        $user = auth()->user(); // ดึงข้อมูลผู้ใช้ที่ล็อกอินอยู่
+
+        // ดึงข้อมูลโพสต์ทั้งหมดที่สร้างโดยผู้ใช้
+        $posts = buy_post::where('shops_shop_id', $user->shop->shop_id) // ใช้ shop_id ของผู้ใช้เพื่อดึงโพสต์ที่เกี่ยวข้อง
+            ->get();
+
+        // ตรวจสอบว่าโพสต์ที่ผู้ใช้สร้างมีหรือไม่
+        if ($posts->isEmpty()) {
+            return response()->json(['message' => 'คุณยังไม่มีโพสต์ที่สร้าง'], 404);
+        }
+
+        // ดึงข้อมูลข้อเสนอทั้งหมดที่ตอบกลับโพสต์
+        $offers = buy_offers::whereIn('buy_post_post_id', $posts->pluck('post_id'))
+            ->with('farm')  // เปลี่ยนจาก 'farms' เป็น 'farm'
+            ->get();
+
+
+        // ตรวจสอบว่ามีข้อเสนอที่ตอบกลับโพสต์เหล่านี้หรือไม่
+        if ($offers->isEmpty()) {
+            return response()->json(['message' => 'ยังไม่มีข้อเสนอที่ตอบกลับโพสต์ของคุณ'], 404);
+        }
+
+        // สร้าง response โดยรวมข้อมูลโพสต์และข้อเสนอที่เกี่ยวข้อง
+        return response()->json([
+            'posts' => $posts->map(function ($post) {
+                return [
+                    'post_id' => $post->post_id,
+                    'description' => $post->description,
+                    'status' => $post->status,
+                    'price_per_unit' => $post->price_per_unit,
+                    'amount' => $post->amount,
+                    'unit' => $post->unit,
+                    'created_at' => $post->created_at,
+                    'updated_at' => $post->updated_at,
+                ];
+            }),
+            'offers' => $offers->map(function ($offer) {
+                return [
+                    'offer_id' => $offer->buy_offers_id,
+                    'quantity' => $offer->quantity,
+                    'price_per_unit' => $offer->price_per_unit,
+                    'status' => $offer->status,
+                    'created_at' => $offer->created_at,
+                    'farm' => $offer->farm ? [
+                        'farm_name' => $offer->farm->farm_name,
+                        'farm_image' => $offer->farm->farm_image,
+                        'bank_name' => $offer->farm->bank_name,
+                        'bank_account' => $offer->farm->bank_account,
+                        'bank_number' => $offer->farm->bank_number,
+                    ] : null  // เพิ่มการตรวจสอบ null
+                ];
+            })
+        ]);
+
+    }
+
     //ดู details offers แต่ละ offers
     public function showOfferDetails($offerId)
     {

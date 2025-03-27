@@ -147,7 +147,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/show-salesposts', [SalesPostController::class, 'showSalesPosts']);
 
     Route::get('/buy-offers/{offerId}/details', [BuyOfferController::class, 'showOfferDetails']);
-
+    Route::get('/offers-by-user-posts', [BuyOfferController::class, 'showOffersByUserPosts']);
     // Routes สำหรับ BuyPostController (ผู้ประกอบการโพสต์รับซื้อวัตถุดิบ)
     Route::get('/buy-posts', [BuyPostController::class, 'index']);
     Route::post('/buy-posts', [BuyPostController::class, 'store']);
