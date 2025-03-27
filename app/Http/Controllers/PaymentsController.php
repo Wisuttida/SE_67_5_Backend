@@ -14,7 +14,7 @@ class PaymentsController extends Controller
     public function uploadPaymentProof(Request $request, $order_id)
     {
         $request->validate([
-            'payment_proof' => 'required|image|mimes:jpg,png,jpeg|max:2048'
+            'payment_proof' => 'required|string'
         ]);
 
         // ค้นหาคำสั่งซื้อจาก orders หรือ custom_orders
@@ -43,13 +43,10 @@ class PaymentsController extends Controller
             $amount = $order->total_amount;
         }
 
-        // อัปโหลดหลักฐานการชำระเงิน
-        $path = $request->file('payment_proof')->store('payments', 'public');
-
         // สร้าง payment โดยใช้ความสัมพันธ์ polymorphic
         $payment = $order->payment()->create([
             'amount' => $amount,
-            'payment_proof_url' => $path,
+            'payment_proof_url' => $request->payment_proof,
             'status' => 'pending'
         ]);
 
@@ -100,7 +97,7 @@ class PaymentsController extends Controller
     public function uploadPaymentProofForIngredientOrder(Request $request, $ingredientOrderId)
     {
         $request->validate([
-            'payment_proof' => 'required|image|mimes:jpg,png,jpeg|max:2048'
+            'payment_proof' => 'required|string'
         ]);
 
         // ค้นหาคำสั่งซื้อจาก ingredient_orders
@@ -109,13 +106,10 @@ class PaymentsController extends Controller
             return response()->json(['error' => 'ไม่พบคำสั่งซื้อวัตถุดิบ'], 404);
         }
 
-        // อัปโหลดหลักฐานการชำระเงิน
-        $path = $request->file('payment_proof')->store('payments', 'public');
-
         // สร้าง payment โดยใช้ความสัมพันธ์ polymorphic
         $payment = $ingredientOrder->payment()->create([
             'amount' => $ingredientOrder->total,
-            'payment_proof_url' => $path,
+            'payment_proof_url' => $request->payment_proof,
             'status' => 'pending',
         ]);
 

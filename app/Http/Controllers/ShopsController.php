@@ -19,12 +19,14 @@ class ShopsController extends Controller
 
         // ตรวจสอบข้อมูลที่รับมา
         $request->validate([
+            'shop_image' => 'sometimes|required|string',
             'shop_name' => 'sometimes|required|string|max:255',
             'accepts_custom' => 'sometimes|required|boolean',
         ]);
 
         // อัปเดตข้อมูลร้านค้า
         $shop->update([
+            'shop_image' => $request->shop_image,
             'shop_name' => $request->shop_name,
             'accepts_custom' => $request->accepts_custom,
         ]);
