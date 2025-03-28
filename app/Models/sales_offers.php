@@ -40,4 +40,9 @@ class sales_offers extends Model
         return $this->morphMany(Payments::class, 'paymentable');
     }
 
+    public function shop()
+    {
+        return $this->belongsTo(shops::class, 'shops_shop_id', 'shop_id');
+    }
+
 }

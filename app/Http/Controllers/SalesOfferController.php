@@ -30,7 +30,7 @@ class SalesOfferController extends Controller
         }
 
         // ดึงข้อมูลข้อเสนอทั้งหมดที่เชื่อมโยงกับร้าน, รายละเอียดของโพสต์, การชำระเงิน และคำสั่งซื้อวัตถุดิบ
-        $offers = sales_offers::with('salePost', 'payments', 'ingredientOrders') // eager load payments และ ingredient_orders
+        $offers = sales_offers::with('salePost', 'payments', 'ingredientOrders', 'shop') // eager load payments และ ingredient_orders
             ->where('shops_shop_id', $shop->shop_id)
             ->get();
 
