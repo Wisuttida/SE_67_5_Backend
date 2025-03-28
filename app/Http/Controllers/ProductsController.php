@@ -69,6 +69,7 @@ class ProductsController extends Controller
                 'volume' => $product->volume,
                 'shop_name' => optional($product->shop)->shop_name,
                 'shop_image' => optional($product->shop)->shop_image,
+                'shop_description' => optional($product->shop)->description,
                 'shops_shop_id' => $product->shops_shop_id,
                 'stock_quantity' => $product->stock_quantity,
                 'description' => $product->description,
