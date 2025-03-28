@@ -322,7 +322,7 @@ class OrdersController extends Controller
     {
         $user = auth()->user();
 
-        $orders = orders::with(['orderItems.product.shop'])
+        $orders = orders::with(['orderItems.product.shop', 'user'])
             ->where('users_user_id', $user->user_id)
             ->where('status', $status)
             ->get();
