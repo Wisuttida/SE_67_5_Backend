@@ -60,4 +60,10 @@ class ingredient_orders extends Model
         return $this->morphOne(payments::class, 'paymentable');
     }
 
+    public function ingredientOrders()
+    {
+        return $this->hasMany(ingredient_orders::class, 'sales_offers_sales_offers_id');
+    }
+
+
 }

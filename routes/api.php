@@ -171,6 +171,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/sales-posts/{id}', [SalesPostController::class, 'destroy']);
 
     // Routes สำหรับ SalesOfferController
+    Route::get('/shop/offers', [SalesOfferController::class, 'showShopOffers']);
+    Route::get('/customer/offers', [SalesOfferController::class, 'showCustomerOffers']);
     Route::post('/sales-offers/{salesPostId}/store', [SalesOfferController::class, 'storeOffer']);
     Route::post('/sales-offers/{offerId}/confirm', [SalesOfferController::class, 'confirmOffer']);
     Route::post('/sales-offers/{offerId}/reject', [SalesOfferController::class, 'rejectOffer']);

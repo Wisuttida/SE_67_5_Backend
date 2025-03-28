@@ -31,4 +31,13 @@ class sales_offers extends Model
     {
         return $this->belongsTo(sales_post::class, 'sales_post_post_id', 'post_id');
     }
+    public function ingredientOrders()
+    {
+        return $this->hasMany(ingredient_orders::class, 'sales_offers_sales_offers_id', 'sales_offers_id');
+    }
+    public function payments()
+    {
+        return $this->morphMany(Payments::class, 'paymentable');
+    }
+
 }
