@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\custom_orders;
 use Illuminate\Http\Request;
 use App\Models\cart;
 use App\Models\orders;
@@ -315,7 +316,7 @@ class OrdersController extends Controller
             ])
             ->get();
 
-        return response()->json($orders);
+        return response()->json($orders, );
     }
     public function getOrdersByStatus($status)
     {
