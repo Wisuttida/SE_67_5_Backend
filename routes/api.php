@@ -116,8 +116,8 @@ Route::middleware('auth:sanctum')->group(function () {
         ->name('orders.getShippedForPosition4');
     Route::get('custom-orders/shipped', [CustomOrderController::class, 'getShippedCustomOrdersForPosition4'])
         ->name('customOrders.getShippedForPosition4');
-    Route::put('orders/{order_id}/mark-delivered', [OrdersController::class, 'markOrderAsDelivered'])
-        ->name('orders.markDelivered');
+    Route::put('orders/{order_id}/mark-delivered', [OrdersController::class, 'markOrderAsDelivered']);
+
 });
 
 Route::middleware('auth:api')->group(function () {

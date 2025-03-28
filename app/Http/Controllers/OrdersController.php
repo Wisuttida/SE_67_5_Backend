@@ -348,7 +348,7 @@ class OrdersController extends Controller
 
         return response()->json($orders);
     }
-    public function markOrderAsReceived($order_id)
+    public function markOrderAsDelivered($order_id)
     {
         $user = auth()->user();
         $order = orders::where('order_id', $order_id)
@@ -360,10 +360,10 @@ class OrdersController extends Controller
             return response()->json(['error' => 'ไม่พบคำสั่งซื้อหรือสถานะไม่สามารถอัปเดตได้'], 404);
         }
 
-        $order->status = 'received';
+        $order->status = 'delivered';
         $order->save();
 
-        return response()->json(['message' => 'คำสั่งซื้อได้รับการอัปเดตเป็น "received" เรียบร้อยแล้ว', 'order' => $order]);
+        return response()->json(['message' => 'คำสั่งซื้อได้รับการอัปเดตเป็น "delivered" เรียบร้อยแล้ว', 'order' => $order]);
     }
 
 
