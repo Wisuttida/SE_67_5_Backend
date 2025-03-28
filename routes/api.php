@@ -112,7 +112,12 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/{order_id}/confirm-payment', [ShopCustomOrderController::class, 'confirmPayment']);
         Route::post('/{order_id}/ship', [ShopCustomOrderController::class, 'shipOrder']);
     });
-
+    Route::get('orders/shipped', [OrdersController::class, 'getShippedOrdersForPosition4'])
+        ->name('orders.getShippedForPosition4');
+    Route::get('custom-orders/shipped', [CustomOrderController::class, 'getShippedCustomOrdersForPosition4'])
+        ->name('customOrders.getShippedForPosition4');
+    Route::put('orders/{order_id}/mark-delivered', [OrdersController::class, 'markOrderAsDelivered'])
+        ->name('orders.markDelivered');
 });
 
 Route::middleware('auth:api')->group(function () {
@@ -196,5 +201,5 @@ Route::middleware('auth:sanctum')->group(function () {
     // Route สำหรับแก้ไขสถานะคำสั่งซื้อของฟาร์ม
     Route::put('/ingredient-orders/{orderId}/update-status', [IngredientOrdersController::class, 'updateOrderStatusForFarm']);
     Route::put('/ingredient-orders/{orderId}/update-to-shipped', [IngredientOrdersController::class, 'updateOrderStatusToShipped']);
-
+    Route::get('/farm/pending-orders', [IngredientOrdersController::class, 'showPendingOrdersForFarm']);
 });

@@ -189,5 +189,36 @@ class IngredientOrdersController extends Controller
 
         return response()->json(['message' => 'อัปเดตสถานะคำสั่งซื้อเป็น "shipped" สำเร็จ', 'order' => $order]);
     }
+    public function showPendingOrdersForFarm()
+    {
+        $user = Auth::user();
+        $farm = $user->farm; // ค้นหาฟาร์มของผู้ใช้
+
+        if (!$farm) {
+            return response()->json(['error' => 'ไม่พบฟาร์มของคุณ'], 404);
+        }
+
+        // ดึงรายการคำสั่งซื้อที่มีสถานะ pending และ sales_offer เป็น confirmed
+        $orders = ingredient_orders::where('farms_farm_id', $farm->farm_id)
+            ->where('status', 'pending') // คำสั่งซื้อที่สถานะเป็น 'pending'
+            ->with([
+                'salesOffer' => function ($query) {
+                    $query->where('status', 'confirmed') // คำเสนอการขายที่สถานะเป็น 'confirmed'
+                        ->with('salePost.ingredients'); // รวมข้อมูลของ ingredients ที่เกี่ยวข้อง
+                },
+                'address' // รวมข้อมูลที่อยู่ของผู้ซื้อ
+            ])
+            ->get();
+
+        // ตรวจสอบผลลัพธ์
+        if ($orders->isEmpty()) {
+            return response()->json([
+                'error' => 'ไม่พบคำสั่งซื้อที่ตรงกับเงื่อนไข',
+                'farm_id' => $farm->farm_id // แสดง farm_id ทุกกรณีที่ไม่พบคำสั่งซื้อ
+            ], 404);
+        }
+
+        return response()->json(['orders' => $orders]);
+    }
 
 }

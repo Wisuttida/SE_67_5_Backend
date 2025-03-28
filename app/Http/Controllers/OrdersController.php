@@ -329,5 +329,42 @@ class OrdersController extends Controller
         return response()->json($orders);
     }
 
+    public function getShippedOrdersForPosition4()
+    {
+        // Get the currently authenticated user
+        $user = auth()->user();
+
+        // Check if the user's position is 4
+        $position = $user->roles()->first()->position_position_id ?? null;
+        if ($position !== 4) {
+            return response()->json(['error' => 'You do not have permission to view these orders'], 403);
+        }
+
+        // Retrieve orders with 'shipped' status for the authenticated user
+        $orders = orders::with(['orderItems.product.shop'])
+            ->where('users_user_id', $user->user_id)
+            ->where('status', 'shipped')
+            ->get();
+
+        return response()->json($orders);
+    }
+    public function markOrderAsReceived($order_id)
+    {
+        $user = auth()->user();
+        $order = orders::where('order_id', $order_id)
+            ->where('users_user_id', $user->user_id)
+            ->where('status', 'shipped')
+            ->first();
+
+        if (!$order) {
+            return response()->json(['error' => 'ไม่พบคำสั่งซื้อหรือสถานะไม่สามารถอัปเดตได้'], 404);
+        }
+
+        $order->status = 'received';
+        $order->save();
+
+        return response()->json(['message' => 'คำสั่งซื้อได้รับการอัปเดตเป็น "received" เรียบร้อยแล้ว', 'order' => $order]);
+    }
+
 
 }

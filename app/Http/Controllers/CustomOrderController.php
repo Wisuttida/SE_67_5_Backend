@@ -66,4 +66,25 @@ class CustomOrderController extends Controller
 
         return response()->json(['message' => 'สร้างคำสั่งซื้อ custom order สำเร็จ', 'order' => $customOrder]);
     }
+
+    public function getShippedCustomOrdersForPosition4()
+    {
+        // Get the currently authenticated user
+        $user = auth()->user();
+
+        // Check if the user's position is 4
+        $position = $user->roles()->first()->position_position_id ?? null;
+        if ($position !== 4) {
+            return response()->json(['error' => 'You do not have permission to view these orders'], 403);
+        }
+
+        // Retrieve custom orders with 'shipped' status for the authenticated user
+        $customOrders = custom_orders::with('shop')
+            ->where('users_user_id', $user->user_id)
+            ->where('status', 'shipped')
+            ->get();
+
+        return response()->json($customOrders);
+    }
+
 }
