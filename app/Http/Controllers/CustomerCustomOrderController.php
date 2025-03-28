@@ -7,6 +7,17 @@ use Illuminate\Http\Request;
 
 class CustomerCustomOrderController extends Controller
 {
+    public function showCustomerOrders($user_id)
+    {
+        // Fetch the custom orders for the given user ID, you can also apply pagination if needed
+        $orders = custom_orders::where('users_user_id', $user_id)->get();
+
+        if ($orders->isEmpty()) {
+            return response()->json(['message' => 'ไม่มีคำสั่งซื้อสำหรับผู้ใช้นี้'], 404);
+        }
+
+        return response()->json(['orders' => $orders]);
+    }
     // ลูกค้ายอมรับ tester ที่ได้รับ
     public function acceptTester(Request $request, $order_id)
     {

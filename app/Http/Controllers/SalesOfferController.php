@@ -19,6 +19,36 @@ use Illuminate\Support\Facades\Auth;
 
 class SalesOfferController extends Controller
 {
+
+    public function showShopOffers(Request $request)
+    {
+        $user = Auth::user();
+        $shop = $user->shop; // ตรวจสอบว่าผู้ใช้มีร้านค้าหรือไม่
+
+        if (!$shop) {
+            return response()->json(['error' => 'คุณไม่มีร้านค้า'], 404);
+        }
+
+        // ดึงข้อมูลข้อเสนอทั้งหมดที่เชื่อมโยงกับร้าน, รายละเอียดของโพสต์, การชำระเงิน และคำสั่งซื้อวัตถุดิบ
+        $offers = sales_offers::with('salePost', 'payments', 'ingredientOrders') // eager load payments และ ingredient_orders
+            ->where('shops_shop_id', $shop->shop_id)
+            ->get();
+
+        return response()->json(['offers' => $offers]);
+    }
+
+    // ฟังก์ชันให้ลูกค้าดูข้อเสนอทั้งหมดที่เกี่ยวข้องกับลูกค้า และแสดงรายละเอียดของโพสต์
+    public function showCustomerOffers(Request $request)
+    {
+        $user = Auth::user();
+
+        // ดึงข้อเสนอทั้งหมดที่เกี่ยวข้องกับผู้ใช้ และรายละเอียดของโพสต์
+        $offers = sales_offers::with('salePost') // นำรายละเอียดของโพสต์มาด้วย
+            ->where('users_user_id', $user->user_id)
+            ->get();
+
+        return response()->json(['offers' => $offers]);
+    }
     // ฟังก์ชันให้ผู้ประกอบการส่งข้อเสนอในโพสต์ขายวัตถุดิบ
     public function storeOffer(Request $request, $salesPostId)
     {
